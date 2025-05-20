@@ -1,0 +1,15 @@
+[workspace]
+members = ["a2015", "a2016", "a2022", "a2023", "a2024", "lib"]
+resolver = "2"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unreadable_literal = "allow"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+match_same_arms = "allow"
+cast_precision_loss = "allow"
+float_cmp = "allow"
+missing_panics_doc = "allow"
+cast_possible_wrap = "allow"
+missing-errors-doc = "allow"
