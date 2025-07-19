@@ -24,7 +24,7 @@ pub struct AStarMulti<C, Cost, EndCond, Neighbors, H> {
 }
 
 impl<
-        C: Into<Point2<usize>> + PartialEq + Eq + Hash + Copy,
+        C: Into<Point2<usize>> + PartialEq + Eq + Hash + Clone,
         Cost: Copy + Ord + Zero + Add,
         EndCond: Fn(&C) -> bool,
         I: IntoIterator<Item = (C, Cost)>,
@@ -38,7 +38,7 @@ impl<
 
         for start in starts {
             open_set.push(Node {
-                data: start,
+                data: start.clone(),
                 cost: h(&start),
             });
             g_score.insert(start, Cost::zero());
@@ -64,11 +64,11 @@ impl<
 
                 match &mut self.best_found {
                     None => {
-                        self.best_found = Some((vec![node], cost));
+                        self.best_found = Some((vec![node.clone()], cost));
                     }
                     Some(best_found) => {
                         if best_found.1 == cost {
-                            best_found.0.push(node);
+                            best_found.0.push(node.clone());
                         } else {
                             debug_assert!(best_found.1 < cost);
                             return Some(MultiPathResult {
@@ -90,15 +90,16 @@ impl<
 
                 match cmp {
                     None | Some(Ordering::Less) => {
-                        self.g_score.insert(neighbor, tentative_g_score);
-                        self.came_from.insert(neighbor, vec![node]);
+                        self.g_score.insert(neighbor.clone(), tentative_g_score);
+                        self.came_from.insert(neighbor.clone(), vec![node.clone()]);
+                        let new_cost = tentative_g_score + (self.h)(&neighbor);
                         self.open_set.push(Node {
                             data: neighbor,
-                            cost: tentative_g_score + (self.h)(&neighbor),
+                            cost: new_cost,
                         });
                     }
                     Some(Ordering::Equal) => {
-                        self.came_from.get_mut(&neighbor).unwrap().push(node);
+                        self.came_from.get_mut(&neighbor).unwrap().push(node.clone());
                     }
                     _ => {}
                 }
@@ -123,16 +124,16 @@ pub struct MultiPathResult<C, Cost> {
     came_from: HashMap<C, Vec<C>>,
 }
 
-impl<C: Into<Point2<usize>> + PartialEq + Eq + Copy + Hash, Cost: Copy> MultiPathResult<C, Cost> {
+impl<C: Into<Point2<usize>> + PartialEq + Eq + Clone + Hash, Cost: Copy> MultiPathResult<C, Cost> {
     pub fn apply<T: Clone>(&self, grid: &mut Grid<T>, path: &T) -> Option<()> {
-        fn a<C: Into<Point2<usize>> + Eq + Hash + Copy, T: Clone>(
+        fn a<C: Into<Point2<usize>> + Eq + Hash + Clone, T: Clone>(
             next: &Vec<C>,
             came_from: &HashMap<C, Vec<C>>,
             grid: &mut Grid<T>,
             path: &T,
         ) -> Option<()> {
             for n in next {
-                grid.set(*n, path.clone())?;
+                grid.set(n.clone(), path.clone())?;
                 let empty = vec![];
                 let next_list = came_from.get(n).unwrap_or(&empty);
                 a(next_list, came_from, grid, path)?;
@@ -140,24 +141,24 @@ impl<C: Into<Point2<usize>> + PartialEq + Eq + Copy + Hash, Cost: Copy> MultiPat
             Some(())
         }
         for end in &self.ends {
-            grid.set(*end, path.clone());
+            grid.set(end.clone(), path.clone());
         }
         a(&self.ends, &self.came_from, grid, path)
     }
 
     pub fn reconstruct_paths(&self) -> Vec<Path<C>> {
-        fn a<C: Into<Point2<usize>> + Eq + Hash + Copy>(
+        fn a<C: Into<Point2<usize>> + Eq + Hash + Clone>(
             next: &Vec<C>,
             came_from: &HashMap<C, Vec<C>>,
         ) -> Vec<Path<C>> {
             let mut paths = vec![];
             for n in next {
                 match came_from.get(n) {
-                    None => paths.push(Path(vec![*n])),
+                    None => paths.push(Path(vec![n.clone()])),
                     Some(next_list) => {
                         let ans = a(next_list, came_from);
                         for mut recieved in ans {
-                            recieved.0.push(*n);
+                            recieved.0.push(n.clone());
                             paths.push(recieved);
                         }
                     }
@@ -183,7 +184,7 @@ mod tests {
 
     #[test]
     fn test() {
-        let mut grid = Grid::from_chars(
+        let mut grid = Grid::from_chars_transpose(
             "
 ##############
 #...........E#
@@ -206,7 +207,7 @@ mod tests {
         let end = grid.find(&'E').unwrap();
 
         let mut finder = AStarMulti::new(
-            vec![Entity::new_on_grid(start, Dir::EAST, &grid).unwrap()],
+            vec![Entity::new_on_grid(start, Dir::East, &grid).unwrap()],
             |c| c.pos() == end,
             |en| {
                 Dir::ORTHO

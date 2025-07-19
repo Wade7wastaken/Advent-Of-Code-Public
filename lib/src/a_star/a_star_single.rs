@@ -1,8 +1,8 @@
-
 use std::{
     cmp::Ordering,
     collections::{BinaryHeap, HashMap},
-    hash::Hash, ops::Add,
+    hash::Hash,
+    ops::Add,
 };
 
 use num::Zero;
@@ -18,12 +18,12 @@ pub struct AStarSingle<C, Cost, EndCond, Neighbors, H> {
     h: H,
 
     open_set: BinaryHeap<Node<C, Cost>>, // the set of cells we need to look at, ordered by node.cost
-    g_score: HashMap<C, Cost>,     // score for traveling to a specific node
+    g_score: HashMap<C, Cost>,           // score for traveling to a specific node
     came_from: HashMap<C, C>,
 }
 
 impl<
-        C: Into<Point2<usize>> + PartialEq + Eq + Hash + Copy,
+        C: Into<Point2<usize>> + PartialEq + Eq + Hash + Clone,
         Cost: Ord + Zero,
         EndCond: Fn(&C) -> bool,
         I: IntoIterator<Item = (C, Cost)>,
@@ -37,7 +37,7 @@ impl<
 
         for start in starts {
             open_set.push(Node {
-                data: start,
+                data: start.clone(),
                 cost: h(&start),
             });
             g_score.insert(start, Cost::zero());
@@ -54,9 +54,8 @@ impl<
     }
 }
 
-
 impl<
-        C: Into<Point2<usize>> + PartialEq + Eq + Hash + Copy,
+        C: Into<Point2<usize>> + PartialEq + Eq + Hash + Clone,
         Cost: Copy + Ord + Zero + Add,
         EndCond: Fn(&C) -> bool,
         I: IntoIterator<Item = (C, Cost)>,
@@ -87,11 +86,12 @@ impl<
                     .is_none_or(Ordering::is_lt);
 
                 if is_better {
-                    self.g_score.insert(neighbor, tentative_g_score);
-                    self.came_from.insert(neighbor, node);
+                    self.g_score.insert(neighbor.clone(), tentative_g_score);
+                    self.came_from.insert(neighbor.clone(), node.clone());
+                    let new_cost = tentative_g_score + (self.h)(&neighbor);
                     self.open_set.push(Node {
                         data: neighbor,
-                        cost: tentative_g_score + (self.h)(&neighbor),
+                        cost: new_cost,
                     });
                 }
             }
@@ -101,20 +101,19 @@ impl<
     }
 }
 
-
 pub struct SinglePathResult<C, Cost> {
     end: C,
     scores: HashMap<C, Cost>,
     came_from: HashMap<C, C>,
 }
 
-impl<C: Into<Point2<usize>> + PartialEq + Eq + Copy + Hash, Cost: Copy> SinglePathResult<C, Cost> {
+impl<C: Into<Point2<usize>> + PartialEq + Eq + Clone + Hash, Cost: Copy> SinglePathResult<C, Cost> {
     pub fn apply<T: Clone>(&self, grid: &mut Grid<T>, path: &T) -> Option<()> {
-        let mut current = self.end;
-        grid.set(current, path.clone())?;
+        let mut current = self.end.clone();
+        grid.set(current.clone(), path.clone())?;
         while let Some(next) = self.came_from.get(&current) {
-            grid.set(*next, path.clone())?;
-            current = *next;
+            grid.set(next.clone(), path.clone())?;
+            current = next.clone();
         }
 
         Some(())
@@ -122,11 +121,11 @@ impl<C: Into<Point2<usize>> + PartialEq + Eq + Copy + Hash, Cost: Copy> SinglePa
 
     pub fn path(&self) -> Path<C> {
         let mut path = vec![];
-        let mut current = self.end;
-        path.push(current);
+        let mut current = self.end.clone();
+        path.push(current.clone());
         while let Some(next) = self.came_from.get(&current) {
-            path.push(*next);
-            current = *next;
+            path.push(next.clone());
+            current = next.clone();
         }
         path.reverse();
         Path(path)

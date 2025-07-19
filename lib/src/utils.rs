@@ -1,7 +1,10 @@
-use std::{collections::HashMap, hash::Hash, iter::Rev, ops::Sub, panic, str::Split};
+use std::{
+    collections::HashMap, hash::Hash, hint::unreachable_unchecked, iter::Rev, ops::Sub, str::Split,
+};
 
 use either::Either;
 use itertools::Itertools;
+use md5::Digest;
 
 #[macro_export]
 macro_rules! tern {
@@ -52,12 +55,13 @@ impl<A, B> Swap<A, B> for (A, B) {
     }
 }
 
-pub trait SwapIf<T> {
-    fn swap_if(self, swap: bool) -> (T, T);
+pub trait SwapIf {
+    #[must_use]
+    fn swap_if(self, swap: bool) -> Self;
 }
 
-impl<T> SwapIf<T> for (T, T) {
-    fn swap_if(self, swap: bool) -> (T, T) {
+impl<T> SwapIf for (T, T) {
+    fn swap_if(self, swap: bool) -> Self {
         tern!(swap, (self.1, self.0), (self.0, self.1))
     }
 }
@@ -135,19 +139,61 @@ impl<I: Iterator<Item = u8>> CollectString for I {
     }
 }
 
-pub fn catch_unwind_silent<F: FnOnce() -> R + panic::UnwindSafe, R>(
-    f: F,
-) -> std::thread::Result<R> {
-    let prev_hook = panic::take_hook();
-    panic::set_hook(Box::new(|_| {}));
-    let result = panic::catch_unwind(f);
-    panic::set_hook(prev_hook);
-    result
+fn to_char(x: u8) -> u8 {
+    debug_assert!(matches!(x, 0x0..=0xf));
+    match x {
+        0x0..=0x9 => x + b'0',
+        0xa..=0xf => x - 0xa + b'a',
+        _ => unsafe { unreachable_unchecked() },
+    }
+}
+
+pub trait DigestHex {
+    fn to_hex(&self) -> [u8; 32];
+    fn hex_digit(&self, i: usize) -> u8;
+}
+
+impl DigestHex for Digest {
+    fn to_hex(&self) -> [u8; 32] {
+        let mut res = [0; 32];
+        for i in 0..16 {
+            let byte = self.0[i];
+            res[2 * i] = to_char(byte >> 4);
+            res[2 * i + 1] = to_char(byte & 0x0f);
+        }
+        res
+    }
+    fn hex_digit(&self, i: usize) -> u8 {
+        let a = self.0[i / 2];
+        let b = tern!(i % 2 == 0, a >> 4, a & 0xf);
+        to_char(b)
+    }
+}
+
+pub trait Inline<R> {
+    #[must_use]
+    fn inline(self, f: impl Fn(&mut Self) -> R) -> Self;
+}
+
+impl<E, R> Inline<R> for E {
+    fn inline(mut self, f: impl Fn(&mut Self) -> R) -> Self {
+        f(&mut self);
+        self
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn digest() {
+        let digest = md5::compute("abc");
+        let hex = digest.to_hex();
+        for (i, h) in hex.into_iter().enumerate() {
+            assert_eq!(h, digest.hex_digit(i));
+        }
+    }
 
     #[test]
     fn test_abs_diff() {

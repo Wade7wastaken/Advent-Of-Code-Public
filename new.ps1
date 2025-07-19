@@ -10,7 +10,7 @@ $day_number_padded = $day_number.ToString("D2")
 
 # Copy template files
 $template_path = "./template"
-$destination_path = "a20$year_number/src/bin/day$day_number_padded/"
+$destination_path = "a20$year_number/src/bin/${year_number}day$day_number_padded/"
 
 mkdir $destination_path > $null
 Copy-Item -Recurse -Force $template_path/* $destination_path

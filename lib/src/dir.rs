@@ -1,179 +1,142 @@
 use std::{
+    error::Error,
     fmt::{Debug, Display},
+    hash::Hash,
     str::FromStr,
 };
 
-use derive_more::derive::{Add, AddAssign, Mul, MulAssign};
-use num::Num;
+use derive_more::derive::Display;
 
-use crate::Point2;
+use crate::Vec2;
 
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    Default,
-    Hash,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Add,
-    AddAssign,
-    Mul,
-    MulAssign,
-)]
-pub struct Dir {
-    pub x: isize,
-    pub y: isize,
+pub trait Offset: Display + Copy + PartialEq + Eq + Hash + Into<Vec2> {
+    #[must_use]
+    fn reverse(self) -> Self;
+
+    #[must_use]
+    fn turn_left(self) -> Self;
+
+    #[must_use]
+    fn turn_right(self) -> Self;
+
+    #[must_use]
+    fn is_ortho(self, other: Self) -> bool;
+
+    #[must_use]
+    fn is_reverse(self, other: Self) -> bool;
+}
+
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Display)]
+pub enum Dir {
+    #[display("East")]
+    East,
+    #[display("West")]
+    West,
+    #[display("North")]
+    North,
+    #[display("South")]
+    South,
 }
 
 impl Dir {
-    // primitive directions
-    pub const EAST: Dir = Dir::new(1, 0);
-    pub const WEST: Dir = Dir::new(-1, 0);
-    pub const NORTH: Dir = Dir::new(0, -1);
-    pub const SOUTH: Dir = Dir::new(0, 1);
-
     // groups of directions
-    pub const ORTHO: [Dir; 4] = [Dir::EAST, Dir::WEST, Dir::NORTH, Dir::SOUTH];
-    pub const ORTHO_SNAKE: [Dir; 4] = [Dir::NORTH, Dir::WEST, Dir::EAST, Dir::SOUTH];
-    pub const SURROUNDING: [Dir; 8] = [
-        Dir::new(-1, -1),
-        Dir::new(0, -1),
-        Dir::new(1, -1),
-        Dir::new(-1, 0),
-        Dir::new(1, 0),
-        Dir::new(-1, 1),
-        Dir::new(0, 1),
-        Dir::new(1, 1),
-    ];
-    pub const CORNERS: [Dir; 4] = [
-        Dir::new(-1, -1),
-        Dir::new(1, -1),
-        Dir::new(-1, 1),
-        Dir::new(1, 1),
-    ];
+    pub const ORTHO: [Dir; 4] = [Dir::East, Dir::West, Dir::North, Dir::South];
+    pub const ORTHO_SNAKE: [Dir; 4] = [Dir::North, Dir::West, Dir::East, Dir::South];
 
-    /// Creates a dir with x and y components. Const for direction groups
-    #[must_use]
-    pub const fn new(x: isize, y: isize) -> Self {
-        Self { x, y }
-    }
-
-    /// Returns an arbitrary index for each of the primitive dirs, so that
-    /// primitive dirs can be used as the keys for an array. Don't depend on the
-    /// specific value of the index.
+    /// Returns an arbitrary index for each of the dirs, so that dirs can be
+    /// used as the keys for an array. Don't depend on the specific value of the
+    /// index.
     #[must_use]
     pub fn idx(self) -> usize {
         match self {
-            Dir::EAST => 0,
-            Dir::WEST => 1,
-            Dir::NORTH => 2,
-            Dir::SOUTH => 3,
-            _ => panic!("Dir::idx only supports primitive dirs"),
+            Dir::East => 0,
+            Dir::West => 1,
+            Dir::North => 2,
+            Dir::South => 3,
         }
     }
+}
 
-    #[must_use]
-    pub fn is_primitive(self) -> bool {
-        matches!(self, Dir::EAST | Dir::WEST | Dir::NORTH | Dir::SOUTH)
-    }
-
+impl Offset for Dir {
     /// Reverses a dir
-    #[must_use]
-    pub fn reverse(self) -> Self {
-        Self {
-            x: -self.x,
-            y: -self.y,
+    fn reverse(self) -> Self {
+        match self {
+            Self::East => Self::West,
+            Self::West => Self::East,
+            Self::North => Self::South,
+            Self::South => Self::North,
         }
     }
 
     /// Turns the dir left (ccw) by 90 degrees
-    #[must_use]
-    pub fn turn_left(self) -> Self {
-        Self {
-            x: self.y,
-            y: -self.x,
+    fn turn_left(self) -> Self {
+        match self {
+            Self::East => Self::North,
+            Self::North => Self::West,
+            Self::West => Self::South,
+            Self::South => Self::East,
         }
     }
 
     /// Turns the dir right (cw) by 90 degrees
-    #[must_use]
-    pub fn turn_right(self) -> Self {
-        Self {
-            x: -self.y,
-            y: self.x,
+    fn turn_right(self) -> Self {
+        match self {
+            Self::East => Self::South,
+            Self::North => Self::East,
+            Self::West => Self::North,
+            Self::South => Self::West,
         }
     }
 
-    /// Calculates the dot product between two dirs
-    #[must_use]
-    pub fn dot(self, other: Dir) -> isize {
-        self.x * other.x + self.y * other.y
-    }
-
     /// Determines if two dirs are perpendicular/orthogonal
-    #[must_use]
-    pub fn is_ortho(self, other: Dir) -> bool {
-        self.dot(other) == 0
+    fn is_ortho(self, other: Self) -> bool {
+        !self.is_reverse(other) && self != other
     }
 
     /// Determines if other is the reverse of self
-    #[must_use]
-    pub fn is_reverse(self, other: Dir) -> bool {
+    fn is_reverse(self, other: Self) -> bool {
         self == other.reverse()
-    }
-
-    pub fn between<T: Num + Copy + TryInto<isize>>(a: Point2<T>, b: Point2<T>) -> Option<Dir> {
-        let x = b.x.try_into().ok()? - a.x.try_into().ok()?;
-        let y = b.y.try_into().ok()? - a.y.try_into().ok()?;
-        Some(Self { x, y })
     }
 }
 
+impl From<Dir> for Vec2 {
+    fn from(val: Dir) -> Self {
+        match val {
+            Dir::East => Vec2::new(1, 0),
+            Dir::West => Vec2::new(-1, 0),
+            Dir::North => Vec2::new(0, -1),
+            Dir::South => Vec2::new(0, 1),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Display)]
+#[display("Error parsing Dir: \"{}\" is not a dir", _0)]
+pub struct DirParseError(String);
+impl Error for DirParseError {}
+
 impl TryFrom<char> for Dir {
-    type Error = ();
+    type Error = DirParseError;
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
-            '^' | 'N' | 'U' | 'n' | 'u' => Ok(Dir::NORTH),
-            '<' | 'W' | 'L' | 'w' | 'l' => Ok(Dir::WEST),
-            '>' | 'E' | 'R' | 'e' | 'r' => Ok(Dir::EAST),
-            'v' | 'S' | 'D' | 's' | 'd' => Ok(Dir::SOUTH),
-            _ => Err(()),
+            '^' | 'N' | 'U' | 'n' | 'u' => Ok(Dir::North),
+            '<' | 'W' | 'L' | 'w' | 'l' => Ok(Dir::West),
+            '>' | 'E' | 'R' | 'e' | 'r' => Ok(Dir::East),
+            'v' | 'S' | 'D' | 's' | 'd' => Ok(Dir::South),
+            _ => Err(DirParseError(value.to_string())),
         }
     }
 }
 
 impl FromStr for Dir {
-    type Err = ();
+    type Err = DirParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "^" | "N" | "U" | "North" | "Up" | "n" | "u" | "north" | "up" => Ok(Dir::NORTH),
-            "<" | "W" | "L" | "West" | "Left" | "w" | "l" | "west" | "left" => Ok(Dir::WEST),
-            ">" | "E" | "R" | "East" | "Right" | "e" | "r" | "east" | "right" => Ok(Dir::EAST),
-            "v" | "S" | "D" | "South" | "Down" | "s" | "d" | "south" | "down" => Ok(Dir::SOUTH),
-            _ => Err(()),
-        }
-    }
-}
-
-impl Display for Dir {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.is_primitive() {
-            write!(
-                f,
-                "{}",
-                match *self {
-                    Dir::EAST => "East",
-                    Dir::WEST => "West",
-                    Dir::NORTH => "North",
-                    Dir::SOUTH => "South",
-                    _ => unreachable!(),
-                }
-            )
-        } else {
-            write!(f, "⟨{},{}⟩", self.x, self.y)
+            "^" | "N" | "U" | "North" | "Up" | "n" | "u" | "north" | "up" => Ok(Dir::North),
+            "<" | "W" | "L" | "West" | "Left" | "w" | "l" | "west" | "left" => Ok(Dir::West),
+            ">" | "E" | "R" | "East" | "Right" | "e" | "r" | "east" | "right" => Ok(Dir::East),
+            "v" | "S" | "D" | "South" | "Down" | "s" | "d" | "south" | "down" => Ok(Dir::South),
+            s => Err(DirParseError(s.to_string())),
         }
     }
 }
@@ -184,80 +147,60 @@ mod tests {
     use crate::itertools::Itertools;
 
     #[test]
-    fn arithmetic() {
-        assert_eq!(Dir::new(2, 5) + Dir::new(8, -3), Dir::new(10, 2));
-        assert_eq!(Dir::new(1, -2) * 3, Dir::new(3, -6));
+    fn display() {
+        assert_eq!(Dir::East.to_string(), "East");
+        assert_eq!(Dir::West.to_string(), "West");
+        assert_eq!(Dir::North.to_string(), "North");
+        assert_eq!(Dir::South.to_string(), "South");
     }
 
     #[test]
-    fn primitives() {
-        assert!(Dir::ORTHO.into_iter().all(Dir::is_primitive));
+    fn index() {
         assert!(Dir::ORTHO.into_iter().map(Dir::idx).all_unique());
     }
 
     #[test]
     fn reverse() {
-        assert_eq!(Dir::EAST.reverse(), Dir::WEST);
-        assert_eq!(Dir::NORTH.reverse(), Dir::SOUTH);
-        assert_eq!(Dir::new(4, -5).reverse(), Dir::new(-4, 5));
-        assert!(Dir::new(4, -5).is_reverse(Dir::new(-4, 5)));
+        assert_eq!(Dir::East.reverse(), Dir::West);
+        assert_eq!(Dir::North.reverse(), Dir::South);
     }
 
     #[test]
     fn turn_left() {
-        assert_eq!(Dir::EAST.turn_left(), Dir::NORTH);
-        assert_eq!(Dir::NORTH.turn_left(), Dir::WEST);
-        assert_eq!(Dir::new(4, -5).turn_left(), Dir::new(-5, -4));
+        assert_eq!(Dir::East.turn_left(), Dir::North);
+        assert_eq!(Dir::North.turn_left(), Dir::West);
     }
 
     #[test]
     fn turn_right() {
-        assert_eq!(Dir::EAST.turn_right(), Dir::SOUTH);
-        assert_eq!(Dir::NORTH.turn_right(), Dir::EAST);
-        assert_eq!(Dir::new(4, -5).turn_right(), Dir::new(5, 4));
-    }
-
-    #[test]
-    fn dot() {
-        assert_eq!(Dir::EAST.dot(Dir::NORTH), 0);
-        assert_eq!(Dir::EAST.dot(Dir::WEST), -1);
-        assert_eq!(Dir::EAST.dot(Dir::EAST), 1);
-        assert_eq!(Dir::new(4, -5).dot(Dir::new(1, 2)), -6);
+        assert_eq!(Dir::East.turn_right(), Dir::South);
+        assert_eq!(Dir::North.turn_right(), Dir::East);
     }
 
     #[test]
     fn is_ortho() {
-        assert!(Dir::NORTH.is_ortho(Dir::EAST));
-        assert!(Dir::WEST.is_ortho(Dir::SOUTH));
-        assert!(Dir::new(1, 5).is_ortho(Dir::new(-5, 1)));
-    }
-
-    #[test]
-    fn between() {
-        assert_eq!(
-            Dir::between(Point2::new(1, 1), Point2::new(4, 6)),
-            Some(Dir::new(3, 5))
-        );
+        assert!(Dir::North.is_ortho(Dir::East));
+        assert!(Dir::West.is_ortho(Dir::South));
     }
 
     #[test]
     fn from_arrow() {
-        assert_eq!(Dir::try_from('^'), Ok(Dir::NORTH));
-        assert_eq!(Dir::try_from('W'), Ok(Dir::WEST));
-        assert_eq!(Dir::try_from('L'), Ok(Dir::WEST));
-        assert_eq!(Dir::try_from('e'), Ok(Dir::EAST));
-        assert_eq!(Dir::try_from('d'), Ok(Dir::SOUTH));
-        assert_eq!(Dir::try_from('A'), Err(()));
+        assert_eq!(Dir::try_from('^'), Ok(Dir::North));
+        assert_eq!(Dir::try_from('W'), Ok(Dir::West));
+        assert_eq!(Dir::try_from('L'), Ok(Dir::West));
+        assert_eq!(Dir::try_from('e'), Ok(Dir::East));
+        assert_eq!(Dir::try_from('d'), Ok(Dir::South));
+        assert_eq!(Dir::try_from('A'), Err(DirParseError("A".to_string())));
 
-        assert_eq!("^".parse(), Ok(Dir::NORTH));
-        assert_eq!("N".parse(), Ok(Dir::NORTH));
-        assert_eq!("L".parse(), Ok(Dir::WEST));
-        assert_eq!("West".parse(), Ok(Dir::WEST));
-        assert_eq!("Right".parse(), Ok(Dir::EAST));
-        assert_eq!("e".parse(), Ok(Dir::EAST));
-        assert_eq!("d".parse(), Ok(Dir::SOUTH));
-        assert_eq!("south".parse(), Ok(Dir::SOUTH));
-        assert_eq!("down".parse(), Ok(Dir::SOUTH));
-        assert_eq!("A".parse::<Dir>(), Err(()));
+        assert_eq!("^".parse(), Ok(Dir::North));
+        assert_eq!("N".parse(), Ok(Dir::North));
+        assert_eq!("L".parse(), Ok(Dir::West));
+        assert_eq!("West".parse(), Ok(Dir::West));
+        assert_eq!("Right".parse(), Ok(Dir::East));
+        assert_eq!("e".parse(), Ok(Dir::East));
+        assert_eq!("d".parse(), Ok(Dir::South));
+        assert_eq!("south".parse(), Ok(Dir::South));
+        assert_eq!("down".parse(), Ok(Dir::South));
+        assert_eq!("A".parse::<Dir>(), Err(DirParseError("A".to_string())));
     }
 }
