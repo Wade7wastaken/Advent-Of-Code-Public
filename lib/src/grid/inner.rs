@@ -1,3 +1,5 @@
+use std::hash::Hash;
+
 use itertools::Itertools;
 
 use crate::Point2;
@@ -40,13 +42,32 @@ impl<T> RowsOrCols<T> {
 }
 
 // maybe update regular to upright
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct InnerGrid<T> {
     rows: Vec<Vec<T>>, // width x height
     cols: Vec<Vec<T>>, // height x width
     width: usize,
     height: usize,
     poison: PoisonState,
+}
+
+impl<T: PartialEq> PartialEq for InnerGrid<T> {
+    fn eq(&self, other: &Self) -> bool {
+        match (&self.poison, &other.poison) {
+            (PoisonState::Rows, PoisonState::Rows) => self.cols == other.cols,
+            (PoisonState::Cols, PoisonState::Cols) => self.rows == other.rows,
+            _ => panic!("Unable to call eq on grids with different poison states"),
+        }
+    }
+}
+
+impl<T: Eq> Eq for InnerGrid<T> {}
+
+impl<T: Hash> Hash for InnerGrid<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.assert_rows();
+        self.rows.hash(state);
+    }
 }
 
 impl<T> InnerGrid<T> {

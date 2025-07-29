@@ -1,16 +1,12 @@
-use std::{
-    fmt::Display,
-    hash::{Hash, Hasher},
-    vec,
-};
+use std::{fmt::Display, hash::Hash, vec};
 
 use itertools::Itertools;
 
-use crate::{tern, ConditionalRev, CountWhere, Dir, Entity, Offset, Point2};
+use crate::{point2, tern, ConditionalRev, CountWhere, Dir, Entity, Offset, Point2};
 
 use super::inner;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Grid<T>(inner::InnerGrid<T>);
 
 impl<T> Grid<T> {
@@ -274,6 +270,45 @@ impl<T> Grid<T> {
         self
     }
 
+    #[must_use]
+    pub fn subgrid(&self, start_x: usize, start_y: usize, width: usize, height: usize) -> Self
+    where
+        T: Clone,
+    {
+        let data = (start_y..(start_y + height))
+            .map(|y| {
+                (start_x..(start_x + width))
+                    .map(|x| self.get((x, y)).unwrap())
+                    .cloned()
+                    .collect_vec()
+            })
+            .collect_vec();
+
+        Self(unsafe { inner::InnerGrid::new_unchecked(data) })
+    }
+
+    pub fn paste(&mut self, other: Self, start_x: usize, start_y: usize) -> Option<()>
+    where
+        T: Clone,
+    {
+        let offset = point2(start_x, start_y);
+        for (p, c) in other.into_enumerate() {
+            self.set(p + offset, c)?;
+        }
+        Some(())
+    }
+
+    pub fn rotate(&mut self) {
+        self.transpose();
+        self.flip_vertical();
+    }
+
+    pub fn flip_vertical(&mut self) {
+        for row in self.rows_mut() {
+            row.reverse();
+        }
+    }
+
     pub fn count_where(&self, cmp: impl Fn(&T) -> bool) -> usize {
         self.0
             .get_both()
@@ -409,12 +444,12 @@ impl<T> Grid<T> {
 impl Grid<char> {
     #[must_use]
     pub fn from_chars_transpose(chars: &str) -> Option<Self> {
-        Self::from_double_iter_transpose(chars.split_whitespace().map(|row| row.trim().chars()))
+        Self::from_double_iter_transpose(chars.lines().map(|row| row.chars()))
     }
 
     #[must_use]
     pub fn from_chars(chars: &str) -> Option<Self> {
-        Self::from_double_iter(chars.split_whitespace().map(|row| row.trim().chars()))
+        Self::from_double_iter(chars.lines().map(|row| row.chars()))
     }
 
     #[must_use]
@@ -510,12 +545,6 @@ impl<T: Clone + Display> Display for Grid<T> {
             .join("\n");
 
         write!(f, "{result}")
-    }
-}
-
-impl<T: Clone + Hash> Hash for Grid<T> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.0.get_rows().hash(state);
     }
 }
 

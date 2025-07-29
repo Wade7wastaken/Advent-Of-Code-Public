@@ -1,4 +1,4 @@
-use lib::{itertools::Itertools, num::Integer};
+use lib::itertools::Itertools;
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -10,14 +10,13 @@ fn part1(input: &str) -> u32 {
     input
         .lines()
         .map(|l| {
-            let minmax = l
-                .split_ascii_whitespace()
+            l.split_ascii_whitespace()
                 .map(|s| s.parse::<u32>().unwrap())
                 .minmax()
                 .into_option()
-                .unwrap();
-            minmax.1 - minmax.0
+                .unwrap()
         })
+        .map(|x| x.1 - x.0)
         .sum()
 }
 
@@ -29,15 +28,9 @@ fn part2(input: &str) -> u32 {
                 .map(|s| s.parse::<u32>().unwrap())
                 .tuple_combinations()
                 .filter_map(|(a, b)| {
-                    let (div, m) = a.div_rem(&b);
-                    if m == 0 {
-                        return Some(div);
-                    }
-                    let (div, m) = b.div_rem(&a);
-                    if m == 0 {
-                        return Some(div);
-                    }
-                    None
+                    (a % b == 0)
+                        .then_some(a / b)
+                        .or_else(|| (b % a == 0).then_some(b / a))
                 })
                 .exactly_one()
                 .unwrap()

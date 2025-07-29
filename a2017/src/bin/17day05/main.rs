@@ -1,4 +1,4 @@
-use lib::itertools::Itertools;
+use lib::{itertools::Itertools, tern};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -31,11 +31,7 @@ fn part2(input: &str) -> u32 {
     while let Some(jumps) = i.try_into().ok().and_then(|i: usize| offsets.get_mut(i)) {
         steps += 1;
         i += *jumps;
-        if *jumps >= 3 {
-            *jumps -= 1;
-        } else {
-            *jumps += 1;
-        }
+        *jumps += tern!(*jumps >= 3, -1, 1);
     }
     steps
 }

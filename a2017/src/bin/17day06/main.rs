@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use lib::itertools::Itertools;
+use lib::{SliceTools, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -8,47 +8,47 @@ fn main() {
     println!("{}", part2(input));
 }
 
-fn part1(input: &str) -> u32 {
-    let mut seen = HashSet::new();
+fn redistribute(state: &mut [u32]) {
+    let (i, &blocks) = state
+        .iter()
+        .enumerate()
+        .max_by(|a, b| a.1.cmp(b.1).then(b.0.cmp(&a.0)))
+        .unwrap();
+    state[i] = 0;
+    let mut blocks = blocks;
+    let mut i = i + 1;
+    while blocks > 0 {
+        *state.at_mut(i) += 1;
+        i += 1;
+        blocks -= 1;
+    }
+}
 
-    let mut state = input
+fn parse_state(input: &str) -> Vec<u32> {
+    input
         .split_ascii_whitespace()
         .map(|x| x.parse::<u32>().unwrap())
-        .collect_vec();
-    let len = state.len();
+        .collect_vec()
+}
 
+fn part1(input: &str) -> u32 {
+    let mut state = parse_state(input);
+
+    let mut seen = HashSet::new();
     let mut steps = 0;
 
     while seen.insert(state.clone()) {
         steps += 1;
-
-        let (i, &blocks) = state
-            .iter()
-            .enumerate()
-            .max_by(|a, b| a.1.cmp(b.1).then(b.0.cmp(&a.0)))
-            .unwrap();
-        state[i] = 0;
-        let mut blocks = blocks;
-        let mut i = i + 1;
-        while blocks > 0 {
-            state[i % len] += 1;
-            i += 1;
-            blocks -= 1;
-        }
+        redistribute(&mut state);
     }
 
     steps
 }
 
 fn part2(input: &str) -> u32 {
+    let mut state = parse_state(input);
+
     let mut seen = HashMap::new();
-
-    let mut state = input
-        .split_ascii_whitespace()
-        .map(|x| x.parse::<u32>().unwrap())
-        .collect_vec();
-    let len = state.len();
-
     let mut steps = 0;
 
     loop {
@@ -57,19 +57,7 @@ fn part2(input: &str) -> u32 {
         }
         steps += 1;
 
-        let (i, &blocks) = state
-            .iter()
-            .enumerate()
-            .max_by(|a, b| a.1.cmp(b.1).then(b.0.cmp(&a.0)))
-            .unwrap();
-        state[i] = 0;
-        let mut blocks = blocks;
-        let mut i = i + 1;
-        while blocks > 0 {
-            state[i % len] += 1;
-            i += 1;
-            blocks -= 1;
-        }
+        redistribute(&mut state);
     }
 }
 

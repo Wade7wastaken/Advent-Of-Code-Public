@@ -8,30 +8,41 @@ fn main() {
     println!("{}", part2(input));
 }
 
+fn run_instr<'a>(instr: &'a str, registers: &mut HashMap<&'a str, i32>) {
+    let (target, instr, amount, _, cond_reg, cond, cond_const) =
+        instr.split_ascii_whitespace().collect_tuple().unwrap();
+
+    let cond_value = *registers.entry(cond_reg).or_insert(0);
+    let constant = cond_const.parse().unwrap();
+
+    let should_happen = match cond {
+        "==" => cond_value == constant,
+        "!=" => cond_value != constant,
+        ">" => cond_value > constant,
+        "<" => cond_value < constant,
+        ">=" => cond_value >= constant,
+        "<=" => cond_value <= constant,
+        _ => panic!(),
+    };
+
+    if !should_happen {
+        return;
+    }
+
+    let amount = amount.parse::<i32>().unwrap();
+    let r = registers.entry(target).or_insert(0);
+
+    match instr {
+        "inc" => *r += amount,
+        "dec" => *r -= amount,
+        _ => panic!(),
+    }
+}
+
 fn part1(input: &str) -> i32 {
     let mut registers = HashMap::new();
     for l in input.lines() {
-        let (target, instr, amount, _, cond_reg, cond, cond_imm) =
-            l.split_ascii_whitespace().collect_tuple().unwrap();
-        let cond_value = *registers.entry(cond_reg).or_insert(0);
-        let constant = cond_imm.parse().unwrap();
-        let should_happen = match cond {
-            "==" => cond_value == constant,
-            "!=" => cond_value != constant,
-            ">" => cond_value > constant,
-            "<" => cond_value < constant,
-            ">=" => cond_value >= constant,
-            "<=" => cond_value <= constant,
-            _ => panic!(),
-        };
-        let amount = amount.parse::<i32>().unwrap();
-        if should_happen {
-            match instr {
-                "inc" => *registers.entry(target).or_insert(0) += amount,
-                "dec" => *registers.entry(target).or_insert(0) -= amount,
-                _ => panic!(),
-            }
-        }
+        run_instr(l, &mut registers);
     }
     *registers.values().max().unwrap()
 }
@@ -42,31 +53,9 @@ fn part2(input: &str) -> i32 {
     let mut highest_so_far = i32::MIN;
 
     for l in input.lines() {
-        let (target, instr, amount, _, cond_reg, cond, cond_imm) =
-            l.split_ascii_whitespace().collect_tuple().unwrap();
-        let cond_value = *registers.entry(cond_reg).or_insert(0);
-        let constant = cond_imm.parse().unwrap();
-        let should_happen = match cond {
-            "==" => cond_value == constant,
-            "!=" => cond_value != constant,
-            ">" => cond_value > constant,
-            "<" => cond_value < constant,
-            ">=" => cond_value >= constant,
-            "<=" => cond_value <= constant,
-            _ => panic!(),
-        };
-        let amount = amount.parse::<i32>().unwrap();
-        if should_happen {
-            match instr {
-                "inc" => *registers.entry(target).or_insert(0) += amount,
-                "dec" => *registers.entry(target).or_insert(0) -= amount,
-                _ => panic!(),
-            }
-        }
-        let highest = *registers.values().max().unwrap();
-        if highest > highest_so_far {
-            highest_so_far = highest;
-        }
+        run_instr(l, &mut registers);
+
+        highest_so_far = highest_so_far.max(*registers.values().max().unwrap());
     }
 
     highest_so_far

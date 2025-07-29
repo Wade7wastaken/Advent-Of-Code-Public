@@ -1,4 +1,4 @@
-use lib::itertools::Itertools;
+use lib::{SliceTools, equal_combine, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -10,21 +10,19 @@ fn part1(input: &str) -> u32 {
     input
         .bytes()
         .circular_tuple_windows()
-        .filter(|&(a, b)| a == b)
-        .map(|(a, _)| u32::from(a - b'0'))
+        .filter_map(|(a, b)| equal_combine(a, b))
+        .map(|a| u32::from(a - b'0'))
         .sum()
 }
 
 fn part2(input: &str) -> u32 {
     let vec = input.bytes().map(|x| x - b'0').collect_vec();
-    let len = vec.len();
-    let mut count = 0;
-    for (i, x) in vec.iter().enumerate() {
-        if vec.get(i) == vec.get((i + len / 2) % len) {
-            count += u32::from(*x);
-        }
-    }
-    count
+
+    vec.iter()
+        .enumerate()
+        .filter(|(i, x)| *x == vec.at(i + vec.len() / 2))
+        .map(|(_, x)| u32::from(*x))
+        .sum()
 }
 
 #[cfg(test)]

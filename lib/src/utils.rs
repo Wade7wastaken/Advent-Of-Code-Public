@@ -44,6 +44,37 @@ impl<Item, F: Fn(Item) -> bool, I: Iterator<Item = Item>> CountWhere<Item, F> fo
     }
 }
 
+pub trait DetectCycle<Item> {
+    // start, len, items
+    fn detect_cycle(self) -> Option<(usize, usize, Vec<Item>)>;
+
+    fn nth_cyclic(self, n: usize) -> Option<Item>
+    where
+        Self: Sized,
+    {
+        let (first, cycle_size, mut items) = self.detect_cycle()?;
+
+        let times = (n - first) % cycle_size + first;
+
+        Some(items.remove(times))
+    }
+}
+
+impl<Item: Clone + Eq + Hash, I: Iterator<Item = Item>> DetectCycle<Item> for I {
+    fn detect_cycle(self) -> Option<(usize, usize, Vec<Item>)> {
+        let mut vec = Vec::new();
+        let mut map = HashMap::new();
+        for (i, item) in self.enumerate() {
+            vec.push(item.clone());
+            if let Some(prev) = map.insert(item, i) {
+                return Some((prev, i - prev, vec));
+            }
+        }
+
+        None
+    }
+}
+
 // util for swapping a 2-tuple
 pub trait Swap<A, B> {
     fn swap(self) -> (B, A);
@@ -99,6 +130,23 @@ impl StringTools for &str {
 
     fn split_paragraphs_once(&self) -> Option<(&str, &str)> {
         self.paragraphs().collect_tuple()
+    }
+}
+
+pub trait SliceTools<T> {
+    fn at(&self, i: usize) -> &T;
+
+    fn at_mut(&mut self, i: usize) -> &mut T;
+}
+
+impl<T> SliceTools<T> for [T] {
+    fn at(&self, i: usize) -> &T {
+        self.get(i % self.len()).unwrap()
+    }
+
+    fn at_mut(&mut self, i: usize) -> &mut T {
+        let len = self.len();
+        self.get_mut(i % len).unwrap()
     }
 }
 
@@ -168,6 +216,12 @@ impl DigestHex for Digest {
         let b = tern!(i % 2 == 0, a >> 4, a & 0xf);
         to_char(b)
     }
+}
+
+pub fn equal_combine<T: PartialEq>(a: T, b: T) -> Option<T> {
+    let res = (a == b).then_some(a);
+    drop(b);
+    res
 }
 
 pub trait Inline<R> {
