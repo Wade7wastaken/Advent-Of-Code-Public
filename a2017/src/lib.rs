@@ -9,7 +9,6 @@ pub fn vec_reverse(mut list: Vec<u8>, i: usize, len: usize) -> Vec<u8> {
     list
 }
 
-
 pub fn knot_hash(input: &str) -> Vec<u8> {
     std::iter::repeat_n((), 64)
         .flat_map(|()| input.bytes().chain([17, 31, 73, 47, 23]))

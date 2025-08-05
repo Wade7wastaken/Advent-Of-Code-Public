@@ -14,8 +14,3 @@ $destination_path = "a20$year_number/src/bin/${year_number}day$day_number_padded
 
 mkdir $destination_path > $null
 Copy-Item -Recurse -Force $template_path/* $destination_path
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to copy template files."
-    exit 1
-}

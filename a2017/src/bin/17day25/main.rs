@@ -20,11 +20,6 @@ struct StateAction<'a> {
 }
 
 fn part1(input: &str) -> u32 {
-    let abc = HashMap::from([
-        ("A", StateAction {zero: CellAction { value: true, offset: 1, state_out: "B" }})
-    ])
-
-
     let mut tape = HashMap::new();
     let mut paragraphs = input.paragraphs();
     let start = paragraphs.next().unwrap();
