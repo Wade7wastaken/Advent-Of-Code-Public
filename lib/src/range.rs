@@ -70,7 +70,7 @@ impl<T: PartialOrd> Range<T> {
 
     pub fn overlaps(&self, r: &Range<T>) -> bool {
         if r.is_empty() {
-            return self.contains(&r.a)
+            return self.contains(&r.a);
         }
         self.a < r.b && r.a < self.b
     }

@@ -1,5 +1,6 @@
 use lib::{
-    md5::{Context, Digest}, CollectString, DigestHex
+    CollectString, DigestHex,
+    md5::{Context, Digest},
 };
 
 fn main() {
@@ -33,8 +34,7 @@ fn part2(input: &str) -> String {
 
     let mut ctx = Context::new();
 
-    let iter = five_zeros(input, &mut ctx)
-        .map(|hash| (hash[2] as usize, hash.hex_digit(6)));
+    let iter = five_zeros(input, &mut ctx).map(|hash| (hash[2] as usize, hash.hex_digit(6)));
 
     for (position, char) in iter {
         if !(0..=7).contains(&position) || filled[position] {

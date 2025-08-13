@@ -4,8 +4,7 @@ use std::{
     collections::{BinaryHeap, HashMap, HashSet},
 };
 
-use lib::{indexmap::IndexSet, itertools::Itertools, select, CollectHashmap, CollectString};
-
+use lib::{CollectHashmap, CollectString, indexmap::IndexSet, itertools::Itertools, select};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

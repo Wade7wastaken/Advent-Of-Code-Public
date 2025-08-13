@@ -34,7 +34,7 @@ fn part2(input: &str) -> u32 {
         })
         .map(|(a, b)| Range::new_inclusive(a, b))
         .collect_vec();
-    
+
     let mut i: u64 = 0;
     let mut count = 0;
     'outer: while u32::try_from(i).is_ok() {

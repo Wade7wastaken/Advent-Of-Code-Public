@@ -3,7 +3,7 @@ use std::{
     mem::swap,
 };
 
-use lib::{itertools::Itertools, StringTools};
+use lib::{StringTools, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -47,10 +47,13 @@ fn wire_value(wires: &mut HashMap<&str, Wire>, w: &str) -> bool {
 
     match a {
         Wire::Active(v) => *v,
-        Wire::Inactive { gate, input_1, input_2 } => {
+        Wire::Inactive {
+            gate,
+            input_1,
+            input_2,
+        } => {
             // let v1 = wire_value(wires, &input_1);
             // let v2 = wire_value(wires, &input_2);
-
 
             true
         }

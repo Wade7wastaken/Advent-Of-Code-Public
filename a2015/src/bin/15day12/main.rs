@@ -11,7 +11,7 @@ fn find_numbers(data: Value) -> i64 {
         Value::Number(n) => n.as_i64().unwrap(),
         Value::Array(arr) => arr.into_iter().map(find_numbers).sum(),
         Value::Object(obj) => obj.into_values().map(find_numbers).sum(),
-        _ => 0
+        _ => 0,
     }
 }
 
@@ -24,12 +24,15 @@ fn find_numbers_without_red(data: Value) -> i64 {
         Value::Number(n) => n.as_i64().unwrap(),
         Value::Array(arr) => arr.into_iter().map(find_numbers_without_red).sum(),
         Value::Object(obj) => {
-            if obj.values().any(|val| val == &Value::String("red".to_string())) {
+            if obj
+                .values()
+                .any(|val| val == &Value::String("red".to_string()))
+            {
                 return 0;
             }
             obj.into_values().map(find_numbers_without_red).sum()
-        },
-        _ => 0
+        }
+        _ => 0,
     }
 }
 
@@ -48,4 +51,3 @@ mod tests {
         assert_eq!(part2(input), 96852);
     }
 }
-

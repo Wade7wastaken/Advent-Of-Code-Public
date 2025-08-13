@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use lib::{itertools::Itertools, CountWhere, Dir, Grid, Offset, Point2, Vec2};
+use lib::{CountWhere, Dir, Grid, Offset, Point2, Vec2, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -39,9 +39,7 @@ fn calc_perimeter(grid: &Grid<u16>, plant_id: u16) -> usize {
 }
 
 fn part1(input: &str) -> usize {
-    let grid = Grid::from_bytes(input)
-        .unwrap()
-        .map(u16::from);
+    let grid = Grid::from_bytes(input).unwrap().map(u16::from);
     let grid = separate_regions(grid);
 
     grid.iter()
@@ -84,7 +82,8 @@ fn internal_vertices(
                 .filter(|dir| grid.get_offset(q, *dir).is_some_and(|adj| *adj == plant_id))
                 .tuple_combinations()
                 .count_where(|(a, b)| {
-                    !a.is_reverse(b) && grid.get_offset(q, Vec2::from(a) + Vec2::from(b)) == Some(&plant_id)
+                    !a.is_reverse(b)
+                        && grid.get_offset(q, Vec2::from(a) + Vec2::from(b)) == Some(&plant_id)
                 })
         })
         .sum()
@@ -101,9 +100,7 @@ fn calc_sides(grid: &Grid<u16>, plant_id: u16) -> usize {
 }
 
 fn part2(input: &str) -> usize {
-    let grid = Grid::from_bytes(input)
-        .unwrap()
-        .map(u16::from);
+    let grid = Grid::from_bytes(input).unwrap().map(u16::from);
     let grid = separate_regions(grid);
 
     grid.iter()

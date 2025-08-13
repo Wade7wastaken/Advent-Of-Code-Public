@@ -182,7 +182,9 @@ pub trait CollectHashmap<K: Hash + Eq, VMap, VIt, R> {
     ) -> HashMap<K, VMap>;
 }
 
-impl<I: Iterator<Item = (K, Vit)>, K: Hash + Eq, VMap, Vit, R> CollectHashmap<K, VMap, Vit, R> for I {
+impl<I: Iterator<Item = (K, Vit)>, K: Hash + Eq, VMap, Vit, R> CollectHashmap<K, VMap, Vit, R>
+    for I
+{
     fn collect_hashmap(
         self,
         f_free: impl Fn(Vit) -> VMap,

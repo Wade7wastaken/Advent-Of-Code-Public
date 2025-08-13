@@ -1,4 +1,4 @@
-use lib::{cycle, itertools::Itertools, Point2};
+use lib::{Point2, cycle, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -49,13 +49,22 @@ fn safety_factor(robots: Vec<Robot>) -> u32 {
     let ch = HEIGHT / 2; // center height
 
     for robot in robots {
-        if robot.position.within((cw + 1, 0).into(), (WIDTH, ch).into()) {
+        if robot
+            .position
+            .within((cw + 1, 0).into(), (WIDTH, ch).into())
+        {
             q1 += 1;
         } else if robot.position.within((0, 0).into(), (cw, ch).into()) {
             q2 += 1;
-        } else if robot.position.within((0, ch + 1).into(), (cw, HEIGHT).into()) {
+        } else if robot
+            .position
+            .within((0, ch + 1).into(), (cw, HEIGHT).into())
+        {
             q3 += 1;
-        } else if robot.position.within((cw + 1, ch + 1).into(), (WIDTH, HEIGHT).into()) {
+        } else if robot
+            .position
+            .within((cw + 1, ch + 1).into(), (WIDTH, HEIGHT).into())
+        {
             q4 += 1;
         }
     }

@@ -99,7 +99,10 @@ impl<
                         });
                     }
                     Some(Ordering::Equal) => {
-                        self.came_from.get_mut(&neighbor).unwrap().push(node.clone());
+                        self.came_from
+                            .get_mut(&neighbor)
+                            .unwrap()
+                            .push(node.clone());
                     }
                     _ => {}
                 }

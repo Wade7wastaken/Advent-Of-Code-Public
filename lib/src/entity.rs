@@ -1,4 +1,7 @@
-use std::{fmt::{self, Display}, hash::Hash};
+use std::{
+    fmt::{self, Display},
+    hash::Hash,
+};
 
 use num::{CheckedAdd, CheckedSub, Num};
 
@@ -303,7 +306,11 @@ impl<T: Num + Copy + Hash, D: Offset> Hash for BaseEntity<T, D> {
 impl<T: Num + Copy + Display, D: Offset> Display for BaseEntity<T, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.bounds {
-            Some(bounds) => write!(f, "At {}, heading {}, with bounds {}", self.pos, self.dir, bounds),
+            Some(bounds) => write!(
+                f,
+                "At {}, heading {}, with bounds {}",
+                self.pos, self.dir, bounds
+            ),
             None => write!(f, "At {}, heading {}", self.pos, self.dir),
         }
     }
@@ -321,7 +328,10 @@ mod tests {
 
     #[test]
     fn display() {
-        assert_eq!(Entity::new((1, 2), Dir::East).to_string(), "At (1, 2), heading East");
+        assert_eq!(
+            Entity::new((1, 2), Dir::East).to_string(),
+            "At (1, 2), heading East"
+        );
     }
 
     #[test]
@@ -357,7 +367,10 @@ mod tests {
 
         let grid = Grid::from_chars_transpose("abc").unwrap();
         let en = Entity::new_on_grid((0, 0), Dir::North, &grid).unwrap();
-        assert_eq!(en.bounds, Some(Bounds(Point2::new(0, 0), Point2::new(3, 1))));
+        assert_eq!(
+            en.bounds,
+            Some(Bounds(Point2::new(0, 0), Point2::new(3, 1)))
+        );
         assert_eq!(en.set_pos_bounded((3, 1)), None);
         let en = Entity::new_on_grid((3, 1), Dir::North, &grid);
         assert_eq!(en, None);
