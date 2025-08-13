@@ -1,4 +1,4 @@
-use lib::itertools::Itertools;
+use lib::{itertools::Itertools, select};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -12,47 +12,37 @@ struct Disc {
 }
 
 fn parse_disc(l: &str) -> Disc {
-    let words = l.split_ascii_whitespace().collect_vec();
+    let (num_positions_str, start_pos_str) = select!(l.split_ascii_whitespace(); 3, 11);
     Disc {
-        num_positions: words[3].parse().unwrap(),
-        start_pos: words[11].strip_suffix('.').unwrap().parse().unwrap(),
+        num_positions: num_positions_str.parse().unwrap(),
+        start_pos: start_pos_str.strip_suffix('.').unwrap().parse().unwrap(),
     }
+}
+
+fn find_time(discs: &[Disc]) -> u32 {
+    (0..u32::MAX)
+        .find(|t_drop| {
+            discs
+                .iter()
+                .enumerate()
+                .all(|(i, disc)| (disc.start_pos + t_drop + i as u32 + 1) % disc.num_positions == 0)
+        })
+        .unwrap()
 }
 
 fn part1(input: &str) -> u32 {
-    'outer: for t_drop in 0.. {
-        for (i, disc) in input.lines().map(parse_disc).enumerate() {
-            let n = i as u32 + 1;
-            if (disc.start_pos + t_drop + n) % disc.num_positions != 0 {
-                continue 'outer;
-            }
-        }
-        return t_drop;
-    }
-
-    panic!();
+    let discs = input.lines().map(parse_disc).collect_vec();
+    find_time(&discs)
 }
 
 fn part2(input: &str) -> u32 {
-    'outer: for t_drop in 0.. {
-        for (i, disc) in input
-            .lines()
-            .map(parse_disc)
-            .chain(std::iter::once(Disc {
-                num_positions: 11,
-                start_pos: 0,
-            }))
-            .enumerate()
-        {
-            let n = i as u32 + 1;
-            if (disc.start_pos + t_drop + n) % disc.num_positions != 0 {
-                continue 'outer;
-            }
-        }
-        return t_drop;
-    }
+    let mut discs = input.lines().map(parse_disc).collect_vec();
+    discs.push(Disc {
+        num_positions: 11,
+        start_pos: 0,
+    });
 
-    panic!();
+    find_time(&discs)
 }
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use lib::{CollectString, itertools::Itertools};
+use lib::itertools::Itertools;
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -22,23 +22,24 @@ fn parse_room(l: &str) -> Room {
     }
 }
 
-fn correct_checksum(name: &str) -> String {
-    name.chars()
+fn is_correct_checksum(room: &Room) -> bool {
+    room.name
+        .bytes()
         .counts()
         .into_iter()
-        .filter(|(k, _)| *k != '-')
+        .filter(|(k, _)| *k != b'-')
         .k_largest_by(5, |(char_a, count_a), (char_b, count_b)| {
             count_a.cmp(count_b).then(char_b.cmp(char_a))
         })
         .map(|x| x.0)
-        .collect()
+        .eq(room.checksum.bytes())
 }
 
 fn part1(input: &str) -> u32 {
     input
         .lines()
         .map(parse_room)
-        .filter(|room| room.checksum == correct_checksum(room.name))
+        .filter(is_correct_checksum)
         .map(|room| room.id)
         .sum()
 }
@@ -47,18 +48,17 @@ fn part2(input: &str) -> u32 {
     input
         .lines()
         .map(parse_room)
-        .filter(|room| room.checksum == correct_checksum(room.name))
+        // .filter(is_correct_checksum)
         .find_map(|room| {
             let shift = (room.id % 26) as u8;
-            let decrypted = room
-                .name
+            room.name
                 .bytes()
                 .map(|b| match b {
                     b'-' => b' ',
                     _ => ((b - b'a' + shift) % 26) + b'a',
                 })
-                .collect_string();
-            (decrypted == "northpole object storage").then_some(room.id)
+                .eq("northpole object storage".bytes())
+                .then_some(room.id)
         })
         .unwrap()
 }

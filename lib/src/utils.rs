@@ -17,6 +17,29 @@ macro_rules! tern {
     };
 }
 
+#[macro_export]
+macro_rules! select {
+    ($iter:expr; $first:expr $(, $rest:expr)*) => {
+        {
+            let mut __iter = &mut $iter;
+            let __first_item = __iter.nth($first).unwrap();
+            select!(@acc __iter, (__first_item), $first; $($rest),*)
+        }
+    };
+
+    (@acc $iter:expr, ($($picked:expr),*), $prev:expr; $next:expr $(, $rest:expr)*) => {
+        {
+            let __skip = $next - $prev - 1;
+            let __item = $iter.nth(__skip).unwrap();
+            select!(@acc $iter, ($($picked,)* __item), $next; $($rest),*)
+        }
+    };
+
+    (@acc $_iter:expr, ($($picked:expr),*), $_last:expr;) => {
+        ($($picked),*)
+    };
+}
+
 // (a-b).abs() but underflow safe
 pub fn abs_diff<T: PartialOrd + Sub<Output = T>>(a: T, b: T) -> T {
     tern!(a > b, a - b, b - a)
@@ -151,19 +174,19 @@ impl<T> SliceTools<T> for [T] {
 }
 
 // more fleshed-out HashMap collect
-pub trait CollectHashmap<K: Hash + Eq, VMap, VIt> {
+pub trait CollectHashmap<K: Hash + Eq, VMap, VIt, R> {
     fn collect_hashmap(
         self,
         f_free: impl Fn(VIt) -> VMap,
-        f_taken: impl FnMut(&mut VMap, VIt),
+        f_taken: impl FnMut(&mut VMap, VIt) -> R,
     ) -> HashMap<K, VMap>;
 }
 
-impl<I: Iterator<Item = (K, Vit)>, K: Hash + Eq, VMap, Vit> CollectHashmap<K, VMap, Vit> for I {
+impl<I: Iterator<Item = (K, Vit)>, K: Hash + Eq, VMap, Vit, R> CollectHashmap<K, VMap, Vit, R> for I {
     fn collect_hashmap(
         self,
         f_free: impl Fn(Vit) -> VMap,
-        mut f_taken: impl FnMut(&mut VMap, Vit),
+        mut f_taken: impl FnMut(&mut VMap, Vit) -> R,
     ) -> HashMap<K, VMap> {
         let mut map = HashMap::new();
         for (k, v) in self {

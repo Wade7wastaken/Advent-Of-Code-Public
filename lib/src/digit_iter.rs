@@ -1,4 +1,7 @@
-use std::hash::Hash;
+use std::{
+    hash::Hash,
+    ops::{Add, Mul},
+};
 
 #[derive(Debug, Default, Clone, Eq)]
 pub struct DigitIter {
@@ -113,6 +116,18 @@ impl Ord for DigitIter {
 impl PartialOrd for DigitIter {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+pub trait CollectDigits<T> {
+    fn collect_digits(self) -> T;
+}
+
+impl<T: Mul<Output = T> + Add<Output = T> + From<u8>, I: Iterator<Item = T>> CollectDigits<T>
+    for I
+{
+    fn collect_digits(self) -> T {
+        self.fold(T::from(0), |acc, n| (acc * T::from(10u8)) + n)
     }
 }
 

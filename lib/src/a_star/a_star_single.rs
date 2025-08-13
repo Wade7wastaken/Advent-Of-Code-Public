@@ -23,7 +23,7 @@ pub struct AStarSingle<C, Cost, EndCond, Neighbors, H> {
 }
 
 impl<
-        C: Into<Point2<usize>> + PartialEq + Eq + Hash + Clone,
+        C: PartialEq + Eq + Hash + Clone,
         Cost: Ord + Zero,
         EndCond: Fn(&C) -> bool,
         I: IntoIterator<Item = (C, Cost)>,
@@ -55,7 +55,7 @@ impl<
 }
 
 impl<
-        C: Into<Point2<usize>> + PartialEq + Eq + Hash + Clone,
+        C: PartialEq + Eq + Hash + Clone,
         Cost: Copy + Ord + Zero + Add,
         EndCond: Fn(&C) -> bool,
         I: IntoIterator<Item = (C, Cost)>,

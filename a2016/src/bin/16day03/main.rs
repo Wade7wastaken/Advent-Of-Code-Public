@@ -9,29 +9,32 @@ fn main() {
     println!("{}", part2(input));
 }
 
-fn part1(input: &str) -> u32 {
-    input.lines().count_where(|line| {
+fn get_triangles(input: &str) -> impl Iterator<Item = (u32, u32, u32)> {
+    input.lines().map(|line| {
         line.trim()
-            .split_ascii_whitespace()
-            .map(|s| s.parse::<u32>().unwrap())
-            .permutations(3)
-            .all(|p| (p[0] + p[1] > p[2]))
-    }) as u32
-}
-
-fn part2(input: &str) -> u32 {
-    let (a, b, c): (Vec<_>, Vec<_>, Vec<_>) = multiunzip(input.lines().map(|l| {
-        l.trim()
             .split_ascii_whitespace()
             .map(|s| s.parse::<u32>().unwrap())
             .collect_tuple()
             .unwrap()
-    }));
+    })
+}
 
-    a.chunks_exact(3)
-        .chain(b.chunks_exact(3))
-        .chain(c.chunks_exact(3))
-        .count_where(|tri| tri.iter().permutations(3).all(|p| (p[0] + p[1] > *p[2]))) as u32
+fn is_valid_triangle((a, b, c): (u32, u32, u32)) -> bool {
+    !(a + b <= c || a + c <= b || b + c <= a)
+}
+
+fn part1(input: &str) -> u32 {
+    get_triangles(input).count_where(is_valid_triangle) as u32
+}
+
+fn part2(input: &str) -> u32 {
+    let (a, b, c): (Vec<_>, Vec<_>, Vec<_>) = multiunzip(get_triangles(input));
+
+    a.into_iter()
+        .tuples()
+        .chain(b.into_iter().tuples())
+        .chain(c.into_iter().tuples())
+        .count_where(is_valid_triangle) as u32
 }
 
 #[cfg(test)]

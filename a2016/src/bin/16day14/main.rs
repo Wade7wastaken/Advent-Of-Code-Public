@@ -12,24 +12,6 @@ fn main() {
     println!("{}", part2(input));
 }
 
-// fn to_char(x: u8) -> u8 {
-//     match x {
-//         0x0..=0x9 => x + b'0',
-//         0xa..=0xf => x - 0xa + b'a',
-//         _ => unsafe { unreachable_unchecked() },
-//     }
-// }
-
-// fn to_hex(digest: Digest) -> [u8; 32] {
-//     let mut res = [0; 32];
-//     for i in 0..16 {
-//         let byte = digest.0[i];
-//         res[2 * i] = to_char(byte >> 4);
-//         res[2 * i + 1] = to_char(byte & 0x0f);
-//     }
-//     res
-// }
-
 fn last_key_index(iter: impl Iterator<Item = (usize, [u8; 32])>) -> u32 {
     let mut map: HashMap<u8, Vec<usize>> = HashMap::new();
 
@@ -40,10 +22,9 @@ fn last_key_index(iter: impl Iterator<Item = (usize, [u8; 32])>) -> u32 {
             v.retain(|key| i - *key <= 1000);
         }
         let valid_keys = hash
-            .into_iter()
-            .tuple_windows()
-            .find(|(a, b, c, d, e)| [a, b, c, d, e].into_iter().all_equal())
-            .and_then(|found| map.get_mut(&found.0))
+            .windows(5)
+            .find_map(|w| w.iter().all_equal_value().ok())
+            .and_then(|found| map.get(found))
             .into_iter()
             .flatten();
 
@@ -55,12 +36,11 @@ fn last_key_index(iter: impl Iterator<Item = (usize, [u8; 32])>) -> u32 {
         }
 
         let possible_key = hash
-            .into_iter()
-            .tuple_windows()
-            .find(|(a, b, c)| a == b && b == c);
+            .windows(3)
+            .find_map(|w| w.iter().all_equal_value().ok());
 
         if let Some(key) = possible_key {
-            map.entry(key.0).or_default().push(i);
+            map.entry(*key).or_default().push(i);
         }
     }
     panic!();

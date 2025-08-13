@@ -1,7 +1,9 @@
 use std::collections::HashSet;
 
 use lib::{
-    itertools::{Either, Itertools}, tern, CountWhere, SwapIf
+    CountWhere, SwapIf,
+    itertools::{Either, Itertools},
+    tern,
 };
 
 fn main() {
@@ -27,15 +29,14 @@ fn part1(input: &str) -> u32 {
 }
 
 fn find_abas(v: Vec<&str>, swap: bool) -> HashSet<(char, char)> {
-    v
-            .into_iter()
-            .flat_map(|x| {
-                x.chars()
-                    .tuple_windows()
-                    .filter(|(a, b, c)| a != b && a == c)
-                    .map(|(a, b, _)| (a, b).swap_if(swap))
-            })
-            .collect::<HashSet<_>>()
+    v.into_iter()
+        .flat_map(|x| {
+            x.chars()
+                .tuple_windows()
+                .filter(|(a, b, c)| a != b && a == c)
+                .map(|(a, b, _)| (a, b).swap_if(swap))
+        })
+        .collect::<HashSet<_>>()
 }
 
 fn part2(input: &str) -> u32 {

@@ -28,11 +28,11 @@ fn checksum(s: String) -> String {
 
 fn solve(input: &str, disc_len: usize) -> String {
     let mut s = input.to_string();
+    s.reserve(disc_len - s.len());
     while s.len() < disc_len {
         dragon_curve_step(&mut s);
     }
     s.truncate(disc_len);
-    // println!("{s}");
     while s.len() % 2 != 1 {
         s = checksum(s);
     }

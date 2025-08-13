@@ -25,34 +25,34 @@ fn part1(input: &str) -> u32 {
     let n = input.parse().unwrap();
     AStarScore::new(
         vec![Point2::new(1, 1)],
-        |p| p == &finish,
+        |p| *p == finish,
         |p| neighbors(*p, n).map(|p| (p, 1)),
         |p| p.manhattan_dist(finish) as u32,
     )
     .first()
 }
 
-fn step(p: Point2<usize>, n: usize, depth: usize, ends: &mut HashMap<Point2<usize>, usize>) {
-    if let Some(depth_encountered) = ends.get(&p) {
+fn step(p: Point2<usize>, n: usize, depth: usize, seen: &mut HashMap<Point2<usize>, usize>) {
+    if let Some(depth_encountered) = seen.get(&p)
+        && *depth_encountered >= depth
+    {
         // we already found a faster way to get to this point
-        if *depth_encountered >= depth {
-            return;
-        }
+        return;
     }
-    ends.insert(p, depth);
+    seen.insert(p, depth);
     if depth == 0 {
         return;
     }
     for next in neighbors(p, n) {
-        step(next, n, depth - 1, ends);
+        step(next, n, depth - 1, seen);
     }
 }
 
 fn part2(input: &str) -> u32 {
     let n = input.parse().unwrap();
-    let mut ends = HashMap::new();
-    step(Point2::new(1, 1), n, 50, &mut ends);
-    ends.len() as u32
+    let mut seen = HashMap::new();
+    step(Point2::new(1, 1), n, 50, &mut seen);
+    seen.len() as u32
 }
 
 #[cfg(test)]

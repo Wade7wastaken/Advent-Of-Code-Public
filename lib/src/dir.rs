@@ -128,6 +128,19 @@ impl TryFrom<char> for Dir {
     }
 }
 
+impl TryFrom<u8> for Dir {
+    type Error = DirParseError;
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            b'^' | b'N' | b'U' | b'n' | b'u' => Ok(Dir::North),
+            b'<' | b'W' | b'L' | b'w' | b'l' => Ok(Dir::West),
+            b'>' | b'E' | b'R' | b'e' | b'r' => Ok(Dir::East),
+            b'v' | b'S' | b'D' | b's' | b'd' => Ok(Dir::South),
+            _ => Err(DirParseError(char::from(value).to_string())),
+        }
+    }
+}
+
 impl FromStr for Dir {
     type Err = DirParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use lib::itertools::Itertools;
+use lib::select;
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -38,20 +38,19 @@ struct Bot {
 fn parse_bots(input: &str) -> HashMap<u8, Bot> {
     let mut bots: HashMap<u8, Bot> = HashMap::new();
     for l in input.lines() {
-        match l.split_ascii_whitespace().collect_vec()[..] {
-            [_, value, _, _, _, bot_num] => {
-                bots.entry(bot_num.parse().unwrap())
-                    .or_default()
-                    .chips
-                    .push(value.parse().unwrap());
-            }
-            [_, bot_num, _, _, _, low, low_num, _, _, _, high, high_num] => {
-                let bot = bots.entry(bot_num.parse().unwrap()).or_default();
+        let mut words = l.split_ascii_whitespace();
+        if l.starts_with('v') {
+            let (value, bot_num) = select!(words; 1, 5);
+            bots.entry(bot_num.parse().unwrap())
+                .or_default()
+                .chips
+                .push(value.parse().unwrap());
+        } else {
+            let (bot_num, low, low_num, high, high_num) = select!(words; 1, 5, 6, 10, 11);
+            let bot = bots.entry(bot_num.parse().unwrap()).or_default();
 
-                bot.dest_low = parse_dest(low, low_num.parse().unwrap());
-                bot.dest_high = parse_dest(high, high_num.parse().unwrap());
-            }
-            _ => panic!("invalid command"),
+            bot.dest_low = parse_dest(low, low_num.parse().unwrap());
+            bot.dest_high = parse_dest(high, high_num.parse().unwrap());
         }
     }
     bots
