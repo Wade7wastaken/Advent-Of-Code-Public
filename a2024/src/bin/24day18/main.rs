@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use lib::{itertools::Itertools, AStarScore, AStarSingle, Dir, Grid, Point2};
+use lib::{a_star_score, a_star_single, itertools::Itertools, Dir, Grid, Point2};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -29,7 +29,7 @@ fn part1(input: &str) -> u32 {
         grid.set(p, false).unwrap();
     }
 
-    AStarScore::new(
+    a_star_score(
         vec![Point2::new(0, 0)],
         |p| *p == end,
         |p| {
@@ -40,7 +40,7 @@ fn part1(input: &str) -> u32 {
         },
         |p| p.manhattan_dist(end) as u32,
     )
-    .first()
+    .unwrap()
 }
 
 fn part2(input: &str) -> String {
@@ -58,7 +58,7 @@ fn part2(input: &str) -> String {
         if !cur_path.is_empty() && !cur_path.contains(&p) {
             continue;
         }
-        let path_result = AStarSingle::new(
+        let path_result = a_star_single(
             vec![Point2::new(0, 0)],
             |p| *p == end,
             |p| {
@@ -68,8 +68,7 @@ fn part2(input: &str) -> String {
                     .map(|(p, _)| (p, 1))
             },
             |p| p.manhattan_dist(end) as u32,
-        )
-        .next();
+        );
 
         if let Some(path) = path_result {
             cur_path = path.path().into_iter().collect();

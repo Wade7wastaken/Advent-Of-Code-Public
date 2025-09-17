@@ -1,4 +1,4 @@
-use lib::{CountWhere, Grid, Offset, Point2, Vec2};
+use lib::{Grid, IteratorExt, Offset, Point2, Vec2};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

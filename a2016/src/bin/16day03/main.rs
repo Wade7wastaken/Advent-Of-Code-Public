@@ -1,5 +1,5 @@
 use lib::{
-    CountWhere,
+    IteratorExt,
     itertools::{Itertools, multiunzip},
 };
 
@@ -13,13 +13,13 @@ fn get_triangles(input: &str) -> impl Iterator<Item = (u32, u32, u32)> {
     input.lines().map(|line| {
         line.trim()
             .split_ascii_whitespace()
-            .map(|s| s.parse::<u32>().unwrap())
+            .map(|s| s.parse().unwrap())
             .collect_tuple()
             .unwrap()
     })
 }
 
-fn is_valid_triangle((a, b, c): (u32, u32, u32)) -> bool {
+const fn is_valid_triangle((a, b, c): (u32, u32, u32)) -> bool {
     !(a + b <= c || a + c <= b || b + c <= a)
 }
 

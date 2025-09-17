@@ -23,32 +23,30 @@ impl<T: Num + Copy + Display> Display for Bounds<T> {
 /// Represents an object with both a position and a direction. Has optional
 /// bounds that restrict its positional movement
 #[derive(Debug, Clone, Copy)]
-pub struct BaseEntity<T: Num + Copy, D: Offset> {
+pub struct Entity<T: Num + Copy, D: Offset = Dir> {
     pos: Point2<T>,
     dir: D,
     bounds: Option<Bounds<T>>,
 }
 
-pub type Entity<T> = BaseEntity<T, Dir>;
-
-impl<T: Num + Copy, D: Offset> BaseEntity<T, D> {
+impl<T: Num + Copy, D: Offset> Entity<T, D> {
     /// getter for pos
-    pub fn pos(self) -> Point2<T> {
+    pub const fn pos(self) -> Point2<T> {
         self.pos
     }
 
     /// getter for dir
-    pub fn dir(self) -> D {
+    pub const fn dir(self) -> D {
         self.dir
     }
 
     /// returns pos and dir in a tuple
-    pub fn tuple(self) -> (Point2<T>, D) {
+    pub const fn tuple(self) -> (Point2<T>, D) {
         (self.pos, self.dir)
     }
 
     /// getter for bounds
-    pub fn bounds(self) -> Option<Bounds<T>> {
+    pub const fn bounds(self) -> Option<Bounds<T>> {
         self.bounds
     }
 
@@ -57,7 +55,7 @@ impl<T: Num + Copy, D: Offset> BaseEntity<T, D> {
     /// # Safety
     /// Caller is responsible for making sure the new bounds are safe in the
     /// given situation
-    pub unsafe fn update_bounds(&mut self, new_bounds: Option<Bounds<T>>) {
+    pub const unsafe fn update_bounds(&mut self, new_bounds: Option<Bounds<T>>) {
         self.bounds = new_bounds;
     }
 
@@ -173,7 +171,7 @@ impl<T: Num + Copy, D: Offset> BaseEntity<T, D> {
 
     /// Returns a new entity with a new direction
     #[must_use]
-    pub fn set_dir(self, dir: D) -> Self {
+    pub const fn set_dir(self, dir: D) -> Self {
         Self { dir, ..self }
     }
 
@@ -288,22 +286,22 @@ impl<T: Num + Copy, D: Offset> BaseEntity<T, D> {
     }
 }
 
-impl<T: Num + Copy, D: Offset> PartialEq for BaseEntity<T, D> {
+impl<T: Num + Copy, D: Offset> PartialEq for Entity<T, D> {
     fn eq(&self, other: &Self) -> bool {
         self.pos == other.pos && self.dir == other.dir
     }
 }
 
-impl<T: Num + Copy, D: Offset> Eq for BaseEntity<T, D> {}
+impl<T: Num + Copy, D: Offset> Eq for Entity<T, D> {}
 
-impl<T: Num + Copy + Hash, D: Offset> Hash for BaseEntity<T, D> {
+impl<T: Num + Copy + Hash, D: Offset> Hash for Entity<T, D> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.pos.hash(state);
         self.dir.hash(state);
     }
 }
 
-impl<T: Num + Copy + Display, D: Offset> Display for BaseEntity<T, D> {
+impl<T: Num + Copy + Display, D: Offset> Display for Entity<T, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.bounds {
             Some(bounds) => write!(
@@ -316,8 +314,8 @@ impl<T: Num + Copy + Display, D: Offset> Display for BaseEntity<T, D> {
     }
 }
 
-impl<T: Num + Copy, D: Offset> From<BaseEntity<T, D>> for Point2<T> {
-    fn from(value: BaseEntity<T, D>) -> Self {
+impl<T: Num + Copy, D: Offset> From<Entity<T, D>> for Point2<T> {
+    fn from(value: Entity<T, D>) -> Self {
         value.pos
     }
 }

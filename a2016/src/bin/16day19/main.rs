@@ -1,7 +1,7 @@
 fn main() {
     let input = include_str!("./input.txt").trim();
     println!("{}", part1(input));
-    // println!("{}", part2(input));
+    println!("{}", part2(input));
 }
 
 fn part1(input: &str) -> u32 {
@@ -10,7 +10,8 @@ fn part1(input: &str) -> u32 {
 }
 
 fn part2(input: &str) -> u32 {
-    todo!();
+    let n: u32 = input.parse().unwrap();
+    n - 3u32.pow(n.ilog(3))
 }
 
 #[cfg(test)]
@@ -21,6 +22,6 @@ mod tests {
     fn test_day() {
         let input = include_str!("./input.txt").trim();
         assert_eq!(part1(input), 1834471);
-        // assert_eq!(part2(input), todo!());
+        assert_eq!(part2(input), 1420064);
     }
 }

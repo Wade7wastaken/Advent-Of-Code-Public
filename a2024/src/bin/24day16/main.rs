@@ -1,4 +1,4 @@
-use lib::{AStarMulti, AStarScore, Dir, Entity, Grid, Offset, itertools::Itertools, tern};
+use lib::{AStarMulti, Dir, Entity, Grid, Offset, a_star_score, itertools::Itertools, tern};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -39,7 +39,7 @@ fn part1(input: &str) -> u32 {
     let start = grid.find(&'S').unwrap();
     let end = grid.find(&'E').unwrap();
 
-    AStarScore::new(
+    a_star_score(
         vec![Entity::new_on_grid(start, Dir::East, &grid).unwrap()],
         |en| en.pos() == end,
         |en| {
@@ -64,7 +64,7 @@ fn part1(input: &str) -> u32 {
                 }
         },
     )
-    .first()
+    .unwrap()
 }
 
 fn part2(input: &str) -> u32 {
@@ -73,7 +73,7 @@ fn part2(input: &str) -> u32 {
     let start = grid.find(&'S').unwrap();
     let end = grid.find(&'E').unwrap();
 
-    AStarMulti::new(
+    let mut finder = AStarMulti::new(
         vec![Entity::new_on_grid(start, Dir::East, &grid).unwrap()],
         |en| en.pos() == end,
         |en| {
@@ -97,15 +97,16 @@ fn part2(input: &str) -> u32 {
                     Dir::South | Dir::West => 2000,
                 }
         },
-    )
-    .run()
-    .unwrap()
-    .reconstruct_paths()
-    .into_iter()
-    .flatten()
-    .map(Entity::pos)
-    .unique()
-    .count() as u32
+    );
+    let end = finder.next().unwrap();
+    finder
+        .reconstruct(end)
+        .reconstruct_paths()
+        .into_iter()
+        .flatten()
+        .map(Entity::pos)
+        .unique()
+        .count() as u32
 }
 
 #[cfg(test)]

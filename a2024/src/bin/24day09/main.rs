@@ -70,22 +70,21 @@ fn part2(input: &str) -> u64 {
                 if let Some(next_free_i) = chunks.iter().position(|c| match c {
                     Chunk::Free(free_size) => *free_size >= *size,
                     Chunk::File(_, _) => false,
-                }) {
-                    if next_free_i < i {
-                        let chunk_removed = chunks.remove(i);
-                        let chunk_removed_len = match chunk_removed {
-                            Chunk::Free(_) => unreachable!(),
-                            Chunk::File(len, _) => len,
-                        };
-                        chunks.insert(i, Chunk::Free(chunk_removed_len));
-                        chunks.insert(next_free_i, chunk_removed);
+                }) && next_free_i < i
+                {
+                    let chunk_removed = chunks.remove(i);
+                    let chunk_removed_len = match chunk_removed {
+                        Chunk::Free(_) => unreachable!(),
+                        Chunk::File(len, _) => len,
+                    };
+                    chunks.insert(i, Chunk::Free(chunk_removed_len));
+                    chunks.insert(next_free_i, chunk_removed);
 
-                        match chunks.get_mut(next_free_i + 1).unwrap() {
-                            Chunk::File(_, _) => unreachable!(),
-                            Chunk::Free(size) => *size -= chunk_removed_len,
-                        }
-                        i += 1;
+                    match chunks.get_mut(next_free_i + 1).unwrap() {
+                        Chunk::File(_, _) => unreachable!(),
+                        Chunk::Free(size) => *size -= chunk_removed_len,
                     }
+                    i += 1;
                 }
             }
         }

@@ -2,7 +2,7 @@ use std::{fmt::Display, hash::Hash, vec};
 
 use itertools::Itertools;
 
-use crate::{point2, tern, ConditionalRev, CountWhere, Dir, Entity, Offset, Point2};
+use crate::{point2, tern, Dir, Entity, IteratorExt, Offset, Point2};
 
 use super::inner;
 
@@ -57,12 +57,12 @@ impl<T> Grid<T> {
     }
 
     #[must_use]
-    pub fn width(&self) -> usize {
+    pub const fn width(&self) -> usize {
         self.0.width()
     }
 
     #[must_use]
-    pub fn height(&self) -> usize {
+    pub const fn height(&self) -> usize {
         self.0.height()
     }
 
@@ -260,12 +260,12 @@ impl<T> Grid<T> {
         self.0.retranspose_cols();
     }
 
-    pub fn transpose(&mut self) {
+    pub const fn transpose(&mut self) {
         self.0.transpose();
     }
 
     #[must_use]
-    pub fn into_transposed(mut self) -> Self {
+    pub const fn into_transposed(mut self) -> Self {
         self.transpose();
         self
     }

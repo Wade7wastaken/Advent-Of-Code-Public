@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use lib::{itertools::Itertools, StringTools};
+use lib::{StringTools, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -34,7 +34,7 @@ struct Rule<'a> {
     dest: &'a str,
 }
 
-fn parse_rule(rule: &str) -> Rule {
+fn parse_rule(rule: &str) -> Rule<'_> {
     let (attr, cond) = rule[..2].chars().collect_tuple().unwrap();
     let (value_str, dest) = rule[2..].split_once(':').unwrap();
 
@@ -52,7 +52,7 @@ struct Workflow<'a> {
     end_location: &'a str,
 }
 
-fn parse_workflow(input: &str) -> (&str, Workflow) {
+fn parse_workflow(input: &str) -> (&str, Workflow<'_>) {
     let (name, rules_str) = input.split_once('{').unwrap();
     let mut rules_iter = rules_str.strip_suffix('}').unwrap().split(',');
     let end_location = rules_iter.next_back().unwrap();

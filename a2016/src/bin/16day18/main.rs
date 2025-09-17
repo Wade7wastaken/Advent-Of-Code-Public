@@ -1,4 +1,4 @@
-use lib::{CountWhere, itertools::Itertools};
+use lib::{IteratorExt, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -7,19 +7,15 @@ fn main() {
 }
 
 fn next_row(row: &[bool]) -> Vec<bool> {
-    row.iter()
-        .enumerate()
-        .map(|(i, &center)| {
+    (0..row.len())
+        .map(|i| {
             let left = i
                 .checked_sub(1)
                 .and_then(|i| row.get(i))
                 .copied()
                 .unwrap_or(false);
             let right = row.get(i + 1).copied().unwrap_or(false);
-            matches!(
-                (left, center, right),
-                (true, true | false, false) | (false, true | false, true)
-            )
+            left != right
         })
         .collect_vec()
 }

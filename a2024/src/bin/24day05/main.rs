@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use lib::{CollectHashmap, StringTools, Swap, itertools::Itertools};
+use lib::{IteratorExt, StringTools, Swap, defer, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -26,13 +26,14 @@ fn follows_rules(map: &HashMap<u32, Vec<u32>>, nums: &[u32]) -> bool {
     let mut seen_nums = HashSet::new();
     let nums_set = nums.iter().collect::<HashSet<_>>();
     nums.iter().all(|n| {
-        let res = map.get(n).is_none_or(|required| {
-            required
-                .iter()
-                .all(|x| !nums_set.contains(x) || seen_nums.contains(x))
-        });
-        seen_nums.insert(*n);
-        res
+        defer!(
+            map.get(n).is_none_or(|required| {
+                required
+                    .iter()
+                    .all(|x| !nums_set.contains(x) || seen_nums.contains(x))
+            });
+            seen_nums.insert(*n)
+        )
     })
 }
 

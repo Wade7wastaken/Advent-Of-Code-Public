@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ops::RangeInclusive};
 
-use lib::{AStarSingle, Dir, Grid, Swap, Vec2};
+use lib::{a_star_single, Dir, Grid, Swap, Vec2};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -24,7 +24,7 @@ fn solve(input: &str, r: isize) -> u32 {
     let start = grid.find(&b'S').unwrap();
     let end = grid.find(&b'E').unwrap();
 
-    let path = AStarSingle::new(
+    let path = a_star_single(
         vec![start],
         |p| *p == end,
         |p| {
@@ -35,7 +35,6 @@ fn solve(input: &str, r: isize) -> u32 {
         },
         |_| 0,
     )
-    .next()
     .unwrap()
     .path()
     .0;

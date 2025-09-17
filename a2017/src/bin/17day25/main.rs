@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use lib::{CountWhere, StringTools, itertools::Itertools, tern};
+use lib::{IteratorExt, StringTools, itertools::Itertools, tern};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -49,7 +49,7 @@ fn parse_action<'a>(lines: &mut impl Iterator<Item = &'a str>) -> Action<'a> {
     }
 }
 
-fn parse_blueprint(input: &str) -> (&str, StateBlueprint) {
+fn parse_blueprint(input: &str) -> (&str, StateBlueprint<'_>) {
     let mut lines = input.lines().map(str::trim);
     let state = lines
         .next()

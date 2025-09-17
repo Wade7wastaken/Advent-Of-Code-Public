@@ -44,7 +44,7 @@ impl Vec2 {
     }
 
     #[must_use]
-    pub fn try_into_dir(self) -> Option<Dir> {
+    pub const fn try_into_dir(self) -> Option<Dir> {
         match self {
             Vec2::EAST => Some(Dir::East),
             Vec2::WEST => Some(Dir::West),
@@ -56,7 +56,7 @@ impl Vec2 {
 
     /// Calculates the dot product between two dirs
     #[must_use]
-    pub fn dot(self, other: Self) -> isize {
+    pub const fn dot(self, other: Self) -> isize {
         self.x * other.x + self.y * other.y
     }
 
@@ -106,6 +106,17 @@ impl Offset for Vec2 {
 impl Display for Vec2 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({}, {})", self.x, self.y)
+    }
+}
+
+impl From<Dir> for Vec2 {
+    fn from(val: Dir) -> Self {
+        match val {
+            Dir::East => Vec2::new(1, 0),
+            Dir::West => Vec2::new(-1, 0),
+            Dir::North => Vec2::new(0, -1),
+            Dir::South => Vec2::new(0, 1),
+        }
     }
 }
 

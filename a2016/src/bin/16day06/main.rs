@@ -1,7 +1,7 @@
 use std::cmp::Reverse;
 
 use lib::{
-    CollectString, Grid,
+    Grid, IteratorExt,
     itertools::{Either, Itertools},
     tern,
 };

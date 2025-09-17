@@ -1,5 +1,5 @@
 use lib::itertools::Itertools;
-use lib::{CountWhere, tern};
+use lib::{IteratorExt, tern};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

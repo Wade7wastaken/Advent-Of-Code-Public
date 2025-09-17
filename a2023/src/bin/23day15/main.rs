@@ -60,10 +60,10 @@ fn part2(input: &str) -> u32 {
                 }
             }
             Action::Remove => {
-                if let Some(lenses) = map.get_mut(&box_num) {
-                    if let Some(i) = lenses.iter().position(|lens| lens.label == label) {
-                        lenses.remove(i);
-                    }
+                if let Some(lenses) = map.get_mut(&box_num)
+                    && let Some(i) = lenses.iter().position(|lens| lens.label == label)
+                {
+                    lenses.remove(i);
                 }
             }
         }

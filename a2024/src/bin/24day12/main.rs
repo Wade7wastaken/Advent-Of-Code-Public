@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use lib::{CountWhere, Dir, Grid, Offset, Point2, Vec2, itertools::Itertools};
+use lib::{Dir, Grid, IteratorExt, Offset, Point2, Vec2, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

@@ -1,7 +1,4 @@
-use lib::{
-    md5::{Context, Digest},
-    rayon::prelude::*,
-};
+use lib::{Digest, DigitIter, Md5, digest::Output, rayon::prelude::*};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -9,21 +6,22 @@ fn main() {
     println!("{}", part2(input));
 }
 
-fn search(input: &str, is_valid: impl Fn(&Digest) -> bool + Sync) -> u32 {
+fn search(input: &str, is_valid: impl Fn(&Output<Md5>) -> bool + Sync) -> u32 {
     (1..u32::MAX)
         .into_par_iter()
         .by_exponential_blocks()
         .map_init(
             || {
-                let mut ctx = Context::new();
-                ctx.consume(input);
+                let mut ctx = Md5::new();
+                ctx.update(input);
                 ctx
             },
             |ctx, i| {
                 let mut c = ctx.clone();
-                c.consume(i.to_string());
-                let hash = c.compute();
-                (i, hash)
+                for d in DigitIter::new(i) {
+                    c.update([d + b'0']);
+                }
+                (i, c.finalize())
             },
         )
         .find_first(|(_, hash)| is_valid(hash))

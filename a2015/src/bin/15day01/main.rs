@@ -1,29 +1,27 @@
+use lib::IteratorExt;
+
 fn main() {
     let input = include_str!("./input.txt").trim();
     println!("{}", part1(input));
     println!("{}", part2(input));
 }
 
+fn paren(c: u8) -> i32 {
+    match c {
+        b'(' => 1,
+        b')' => -1,
+        _ => panic!(),
+    }
+}
+
 fn part1(input: &str) -> i32 {
-    input.bytes().fold(0, |acc, c| match c {
-        b'(' => acc + 1,
-        b')' => acc - 1,
-        _ => panic!("invalid char: {c}"),
-    })
+    input.bytes().fold(0, |acc, c| acc + paren(c))
 }
 
 fn part2(input: &str) -> u32 {
-    let mut floor: i32 = 0;
     input
         .bytes()
-        .map(|c| {
-            match c {
-                b'(' => floor += 1,
-                b')' => floor -= 1,
-                _ => panic!("invalid char: {c}"),
-            }
-            floor
-        })
+        .apply(0, |floor, c| floor + paren(c))
         .position(|f| f < 0)
         .unwrap() as u32
         + 1

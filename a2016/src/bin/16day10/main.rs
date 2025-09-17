@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use lib::select;
+use lib::{itertools::Itertools, select};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -40,11 +40,11 @@ fn parse_bots(input: &str) -> HashMap<u8, Bot> {
     for l in input.lines() {
         let mut words = l.split_ascii_whitespace();
         if l.starts_with('v') {
-            let (value, bot_num) = select!(words; 1, 5);
-            bots.entry(bot_num.parse().unwrap())
-                .or_default()
-                .chips
-                .push(value.parse().unwrap());
+            let (value, bot_num) = words
+                .filter_map(|w| w.parse().ok())
+                .collect_tuple()
+                .unwrap();
+            bots.entry(bot_num).or_default().chips.push(value);
         } else {
             let (bot_num, low, low_num, high, high_num) = select!(words; 1, 5, 6, 10, 11);
             let bot = bots.entry(bot_num.parse().unwrap()).or_default();
@@ -59,6 +59,8 @@ fn parse_bots(input: &str) -> HashMap<u8, Bot> {
 fn part1(input: &str) -> u32 {
     let mut bots = parse_bots(input);
 
+    let target = vec![17, 61];
+
     loop {
         let iter = bots
             .clone()
@@ -67,7 +69,7 @@ fn part1(input: &str) -> u32 {
 
         for (bot_num, mut bot) in iter {
             bot.chips.sort_unstable();
-            if bot.chips == vec![17, 61] {
+            if bot.chips == target {
                 return u32::from(bot_num);
             }
             if let Dest::Bot(bot_dest) = bot.dest_low {

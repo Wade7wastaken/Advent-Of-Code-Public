@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use lib::{
-    DigestHex, cycle,
+    DigitIter, cycle,
     itertools::Itertools,
-    md5::{self, Context},
+    md5::{Digest, Md5},
+    to_hex,
 };
 
 fn main() {
@@ -47,23 +48,32 @@ fn last_key_index(iter: impl Iterator<Item = (usize, [u8; 32])>) -> u32 {
 }
 
 fn part1(input: &str) -> u32 {
+    let ctx = Md5::new().chain_update(input);
     let iter = (0..usize::MAX).map(|i| {
-        let mut c = Context::new();
-        c.consume(input);
-        c.consume(i.to_string());
-        (i, c.compute().to_hex())
+        let mut c = ctx.clone();
+        for d in DigitIter::new(i as u32) {
+            c.update([d + b'0']);
+        }
+        (i, to_hex(c.finalize().into()))
     });
 
     last_key_index(iter)
 }
 
 fn part2(input: &str) -> u32 {
+    let ctx = Md5::new().chain_update(input);
     let iter = (0..usize::MAX).map(|i| {
-        let mut c = Context::new();
-        c.consume(input);
-        c.consume(i.to_string());
-        let hash = c.compute().to_hex();
-        (i, cycle(hash, 2016, |hash| md5::compute(hash).to_hex()))
+        let mut c = ctx.clone();
+        for d in DigitIter::new(i as u32) {
+            c.update([d + b'0']);
+        }
+        let hash = to_hex(c.finalize().into());
+        (
+            i,
+            cycle(hash, 2016, |hash| {
+                to_hex(Md5::new().chain_update(hash).finalize().into())
+            }),
+        )
     });
 
     last_key_index(iter)

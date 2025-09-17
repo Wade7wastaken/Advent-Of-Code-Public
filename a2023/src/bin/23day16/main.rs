@@ -1,4 +1,4 @@
-use lib::{BaseEntity, Dir, Entity, Grid, Offset};
+use lib::{Dir, Entity, Grid, Offset};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -21,7 +21,7 @@ fn reflect_tilted_mirror(dir: Dir) -> Dir {
     }
 }
 
-fn step(grid: &mut Grid<Cell>, en: BaseEntity<usize, Dir>) -> Vec<BaseEntity<usize, Dir>> {
+fn step(grid: &mut Grid<Cell>, en: Entity<usize, Dir>) -> Vec<Entity<usize, Dir>> {
     grid.get_mut(en.pos()).unwrap().visited[en.dir().idx()] = true;
 
     let new_dirs = match (grid.get(en.pos()).unwrap().c, en.dir()) {

@@ -1,4 +1,4 @@
-use lib::{AStarScore, Dir, Entity, Grid, Point2};
+use lib::{a_star_score, Dir, Entity, Grid, Point2};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -54,13 +54,13 @@ fn shortest_path(input: &str, next: fn(&Entity<usize>, &Grid<u32>) -> NeighborLi
         Entity::new_on_grid((0, 0), Dir::South, &grid).unwrap(),
     ];
 
-    AStarScore::new(
+    a_star_score(
         starting,
         |en| en.pos() == end,
         |en| next(en, &grid),
         |en| en.pos().manhattan_dist(end) as u32,
     )
-    .first()
+    .unwrap()
 }
 
 fn part1(input: &str) -> u32 {

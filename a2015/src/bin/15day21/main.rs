@@ -1,6 +1,6 @@
 use std::ops::Add;
 
-use lib::{itertools::Itertools, num::Integer, StringTools};
+use lib::{StringTools, itertools::Itertools, num::Integer};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use lib::{CountWhere, Dir, Grid};
+use lib::{Dir, Grid, IteratorExt};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

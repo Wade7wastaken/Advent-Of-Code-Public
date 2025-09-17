@@ -1,4 +1,4 @@
-use lib::ConditionalRev;
+use lib::IteratorExt;
 
 fn main() {
     let input = include_str!("./input.txt").trim();

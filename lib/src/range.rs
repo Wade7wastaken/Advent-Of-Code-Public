@@ -16,15 +16,15 @@ pub struct Range<T> {
 impl<T> Range<T> {
     /// # Safety
     /// Caller is responsible for ensuring start <= end
-    pub unsafe fn new_unchecked(start: T, end: T) -> Self {
+    pub const unsafe fn new_unchecked(start: T, end: T) -> Self {
         Self { a: start, b: end }
     }
 
-    pub fn start(&self) -> &T {
+    pub const fn start(&self) -> &T {
         &self.a
     }
 
-    pub fn end(&self) -> &T {
+    pub const fn end(&self) -> &T {
         &self.b
     }
 }

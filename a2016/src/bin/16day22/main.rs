@@ -1,4 +1,4 @@
-use lib::itertools::Itertools;
+use lib::{itertools::Itertools, Grid, Point2};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -36,7 +36,18 @@ fn part1(input: &str) -> u32 {
         .count() as u32
 }
 
+struct Cell {
+    used: u32,
+    avail: u32,
+}
+
+struct State {
+    grid: Grid<Cell>,
+    goal: Point2<usize>,
+}
+
 fn part2(input: &str) -> u32 {
+    // input.lines().map(parse_line).map(|n| Cell {used: n.used, avail: n.avail})
     todo!();
 }
 

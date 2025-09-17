@@ -1,4 +1,4 @@
-use lib::{CountWhere, equal_combine, itertools::Itertools};
+use lib::{IteratorExt, equal_combine, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

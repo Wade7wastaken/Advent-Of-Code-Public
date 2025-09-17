@@ -18,9 +18,13 @@ fn part1(input: &str) -> u64 {
         .map(|(a, b)| Range::new_inclusive(a, b))
         .collect_vec();
 
-    (0..u64::MAX)
-        .find(|i| ranges.iter().all(|r| !r.contains(i)))
-        .unwrap()
+    let mut i = 0;
+
+    while let Some(r) = ranges.iter().find(|r| r.contains(&i)) {
+        i = *r.end();
+    }
+
+    i
 }
 
 fn part2(input: &str) -> u32 {

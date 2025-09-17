@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use lib::{CollectString, Grid, itertools::Itertools, select};
+use lib::{Grid, IteratorExt, itertools::Itertools, select};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -97,10 +97,11 @@ const Y_DATA: &str = "
 ..#..
 ..#..";
 
+fn create_grid(data: &str) -> Grid<bool> {
+    Grid::from_bytes(data.trim()).unwrap().map(|c| c == b'#')
+}
+
 fn recognize_text(grid: &Grid<bool>) -> String {
-    fn create_grid(data: &str) -> Grid<bool> {
-        Grid::from_bytes(data.trim()).unwrap().map(|c| c == b'#')
-    }
     let map = HashMap::from([
         (create_grid(C_DATA), b'C'),
         (create_grid(E_DATA), b'E'),

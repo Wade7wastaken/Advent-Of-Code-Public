@@ -3,6 +3,8 @@ use std::{
     ops::{Add, Mul},
 };
 
+use crate::{tern, Inline};
+
 #[derive(Debug, Default, Clone, Eq)]
 pub struct DigitIter {
     n: u32,
@@ -10,16 +12,13 @@ pub struct DigitIter {
 }
 
 #[must_use]
-pub fn integer_length(n: u32) -> usize {
-    if n == 0 {
-        return 1;
-    }
-    n.ilog10() as usize + 1
+pub const fn integer_length(n: u32) -> usize {
+    tern!(n == 0, 1, n.ilog10() as usize + 1)
 }
 
 impl DigitIter {
     #[must_use]
-    pub fn new(n: u32) -> Self {
+    pub const fn new(n: u32) -> Self {
         Self {
             n,
             length: integer_length(n),
@@ -27,7 +26,7 @@ impl DigitIter {
     }
 
     #[must_use]
-    pub fn value(&self) -> u32 {
+    pub const fn value(&self) -> u32 {
         self.n
     }
 
@@ -39,9 +38,8 @@ impl DigitIter {
     }
 
     #[must_use]
-    pub fn added_left<N: Into<u32>>(mut self, d: N) -> Self {
-        self.add_left(d);
-        self
+    pub fn added_left<N: Into<u32>>(self, d: N) -> Self {
+        self.inline(|s| s.add_left(d))
     }
 
     pub fn add_right<N: Into<u32>>(&mut self, d: N) {
@@ -53,9 +51,8 @@ impl DigitIter {
     }
 
     #[must_use]
-    pub fn added_right<N: Into<u32>>(mut self, d: N) -> Self {
-        self.add_right(d);
-        self
+    pub fn added_right<N: Into<u32>>(self, d: N) -> Self {
+        self.inline(|s| s.add_right(d))
     }
 
     pub fn clear(&mut self) {
@@ -64,34 +61,22 @@ impl DigitIter {
 }
 
 impl Iterator for DigitIter {
-    type Item = u32;
+    type Item = u8;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.length == 0 {
-            return None;
-        }
-        if self.length == 1 {
-            let digit = self.n;
-            self.n = 0;
-            self.length = 0;
-            return Some(digit);
-        }
-        let mask = 10u32.pow(self.length as u32 - 1);
+        self.length = self.length.checked_sub(1)?;
+        let mask = 10u32.pow(self.length as u32);
         let digit = self.n / mask;
         self.n %= mask;
-        self.length -= 1;
-        Some(digit)
+        Some(digit as u8)
     }
 }
 
 impl DoubleEndedIterator for DigitIter {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.length == 0 {
-            return None;
-        }
+        self.length = self.length.checked_sub(1)?;
         let digit = self.n % 10;
         self.n /= 10;
-        self.length -= 1;
-        Some(digit)
+        Some(digit as u8)
     }
 }
 
@@ -152,6 +137,18 @@ mod tests {
         let digits = DigitIter::new(1000);
         assert_eq!(digits.clone().collect_vec(), vec![1, 0, 0, 0]);
         assert_eq!(digits.rev().collect_vec(), vec![0, 0, 0, 1]);
+    }
+
+    #[test]
+    fn post_state() {
+        let mut digits = DigitIter::new(1234);
+        assert_eq!(digits.next(), Some(1));
+        assert_eq!(digits.next(), Some(2));
+        assert_eq!(digits.next(), Some(3));
+        assert_eq!(digits.next(), Some(4));
+        assert_eq!(digits.next(), None);
+        assert_eq!(digits.n, 0);
+        assert_eq!(digits.length, 0);
     }
 
     #[test]

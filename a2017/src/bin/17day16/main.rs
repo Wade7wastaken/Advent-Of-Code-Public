@@ -1,4 +1,4 @@
-use lib::{DetectCycle, itertools::Itertools};
+use lib::{IteratorExt, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

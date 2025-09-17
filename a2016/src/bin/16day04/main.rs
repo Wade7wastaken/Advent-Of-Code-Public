@@ -12,7 +12,7 @@ struct Room<'a> {
     id: u32,
 }
 
-fn parse_room(l: &str) -> Room {
+fn parse_room(l: &str) -> Room<'_> {
     let (name_id, checksum) = l.split_once('[').unwrap();
     let (name, room_id) = name_id.rsplit_once('-').unwrap();
     Room {
@@ -48,7 +48,6 @@ fn part2(input: &str) -> u32 {
     input
         .lines()
         .map(parse_room)
-        // .filter(is_correct_checksum)
         .find_map(|room| {
             let shift = (room.id % 26) as u8;
             room.name

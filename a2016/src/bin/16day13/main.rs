@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use lib::{AStarScore, Dir, Point2};
+use lib::{a_star_score, point2, Dir, Point2};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -8,7 +8,7 @@ fn main() {
     println!("{}", part2(input));
 }
 
-fn is_open(p: Point2<usize>, n: usize) -> bool {
+const fn is_open(p: Point2<usize>, n: usize) -> bool {
     let Point2 { x, y } = p;
     (x * x + 3 * x + 2 * x * y + y + y * y + n).count_ones() % 2 == 0
 }
@@ -20,16 +20,17 @@ fn neighbors(p: Point2<usize>, n: usize) -> impl Iterator<Item = Point2<usize>> 
         .filter(move |p| is_open(*p, n))
 }
 
+const GOAL: Point2<usize> = point2(31, 39);
+
 fn part1(input: &str) -> u32 {
-    let finish = Point2::new(31, 39);
     let n = input.parse().unwrap();
-    AStarScore::new(
+    a_star_score(
         vec![Point2::new(1, 1)],
-        |p| *p == finish,
+        |p| *p == GOAL,
         |p| neighbors(*p, n).map(|p| (p, 1)),
-        |p| p.manhattan_dist(finish) as u32,
+        |p| p.manhattan_dist(GOAL) as u32,
     )
-    .first()
+    .unwrap()
 }
 
 fn step(p: Point2<usize>, n: usize, depth: usize, seen: &mut HashMap<Point2<usize>, usize>) {

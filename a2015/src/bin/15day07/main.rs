@@ -8,19 +8,16 @@ fn main() {
     println!("{}", part2(input));
 }
 
-fn wire_value<'a, 'b>(
-    wire_map: &HashMap<&str, &'b str>,
+fn wire_value<'a>(
+    wire_map: &HashMap<&str, &'a str>,
     wire: &'a str,
     cache: &mut HashMap<&'a str, u16>,
-) -> u16
-where
-    'b: 'a,
-{
+) -> u16 {
     if let Some(cached) = cache.get(&wire) {
         return *cached;
     }
-    let expr = wire_map[wire];
-    let mut eval = |s: &'b str| s.parse().unwrap_or_else(|_| wire_value(wire_map, s, cache));
+    let expr = wire_map.get(wire).unwrap();
+    let mut eval = |s: &'a str| s.parse().unwrap_or_else(|_| wire_value(wire_map, s, cache));
     let wire_value = if let Some((a, b)) = expr.split_once(" AND ") {
         eval(a) & eval(b)
     } else if let Some((a, b)) = expr.split_once(" LSHIFT ") {

@@ -1,4 +1,4 @@
-use lib::{itertools::Itertools, StringTools};
+use lib::{StringTools, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

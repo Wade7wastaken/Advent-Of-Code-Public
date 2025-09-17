@@ -1,4 +1,4 @@
-use lib::{CountWhere, itertools::Itertools};
+use lib::{IteratorExt, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -8,41 +8,34 @@ fn main() {
 
 fn part1(input: &str) -> u32 {
     input.lines().count_where(|l| {
-        let vowels = l
-            .chars()
-            .count_where(|c| matches!(c, 'a' | 'e' | 'i' | 'o' | 'u'));
         let mut twice = false;
-        for (a, b) in l.chars().tuple_windows() {
+        for (a, b) in l.bytes().tuple_windows() {
+            if matches!(
+                (a, b),
+                (b'a', b'b') | (b'c', b'd') | (b'p', b'q') | (b'x', b'y')
+            ) {
+                return false;
+            }
             if a == b {
                 twice = true;
             }
-            if matches!((a, b), ('a', 'b') | ('c', 'd') | ('p', 'q') | ('x', 'y')) {
-                return false;
-            }
         }
-        vowels >= 3 && twice
+        twice
+            && l.bytes()
+                .count_where(|c| matches!(c, b'a' | b'e' | b'i' | b'o' | b'u'))
+                >= 3
     }) as u32
 }
 
 fn part2(input: &str) -> u32 {
     input.lines().count_where(|l| {
-        let mut pairs = false;
-        let mut three = false;
-        for (i, (a, b)) in l.chars().tuple_windows().enumerate() {
-            if l.chars()
-                .tuple_windows()
-                .skip(i + 2)
-                .any(|(x, y)| x == a && y == b)
-            {
-                pairs = true;
-            }
-        }
-        for (a, _, c) in l.chars().tuple_windows() {
-            if a == c {
-                three = true;
-            }
-        }
-        pairs && three
+        l.chars().tuple_windows().any(|(a, _, c)| a == c)
+            && l.chars().tuple_windows().enumerate().any(|(i, (a, b))| {
+                l.chars()
+                    .tuple_windows()
+                    .skip(i + 2)
+                    .any(|(x, y)| x == a && y == b)
+            })
     }) as u32
 }
 

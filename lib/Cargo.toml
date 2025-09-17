@@ -15,7 +15,7 @@ derive_more = { version = "2.0.1", features = [
 either = "1.13.0"
 indexmap = "2.10.0"
 itertools = "0.14.0"
-md5 = "0.7.0"
+md-5 = "0.10.6"
 num = "0.4.3"
 num-bigint = "0.4.6"
 pathfinding = "4.14.0"

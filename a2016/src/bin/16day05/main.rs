@@ -1,6 +1,7 @@
 use lib::{
-    CollectString, DigestHex,
-    md5::{Context, Digest},
+    DigitIter, IteratorExt, hex_digit,
+    md5::{Digest, Md5, digest::Output},
+    to_char,
 };
 
 fn main() {
@@ -9,22 +10,24 @@ fn main() {
     println!("{}", part2(input));
 }
 
-fn five_zeros(input: &str, ctx: &mut Context) -> impl Iterator<Item = Digest> {
-    ctx.consume(input);
+fn five_zeros(input: &str, ctx: &mut Md5) -> impl Iterator<Item = Output<Md5>> {
+    ctx.update(input);
 
-    (0..)
+    (0..u32::MAX)
         .map(|i| {
             let mut c = ctx.clone();
-            c.consume(i.to_string());
-            c.compute()
+            for d in DigitIter::new(i) {
+                c.update([d + b'0']);
+            }
+            c.finalize()
         })
         .filter(|hash| hash[0] == 0 && hash[1] == 0 && hash[2] & 0xf0 == 0)
 }
 
 fn part1(input: &str) -> String {
-    five_zeros(input, &mut Context::new())
+    five_zeros(input, &mut Md5::new())
         .take(8)
-        .map(|hash| hash.hex_digit(5))
+        .map(|hash| hex_digit(&hash, 5))
         .collect_string()
 }
 
@@ -32,9 +35,9 @@ fn part2(input: &str) -> String {
     let mut password = [0u8; 8];
     let mut filled = [false; 8];
 
-    let mut ctx = Context::new();
+    let mut ctx = Md5::new();
 
-    let iter = five_zeros(input, &mut ctx).map(|hash| (hash[2] as usize, hash.hex_digit(6)));
+    let iter = five_zeros(input, &mut ctx).map(|hash| (hash[2] as usize, to_char(hash[3] >> 4)));
 
     for (position, char) in iter {
         if !(0..=7).contains(&position) || filled[position] {

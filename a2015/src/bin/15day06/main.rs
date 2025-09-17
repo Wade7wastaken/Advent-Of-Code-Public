@@ -17,7 +17,7 @@ fn parse_operation(op: &str) -> Operation {
         "turn on" => Operation::On,
         "turn off" => Operation::Off,
         "toggle" => Operation::Toggle,
-        _ => panic!("unknown operation: {op}"),
+        _ => panic!(),
     }
 }
 

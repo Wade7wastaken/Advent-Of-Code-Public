@@ -38,44 +38,34 @@ fn create_constants() -> HashMap<&'static str, u32> {
 
 fn part1(input: &str) -> u32 {
     let constants = create_constants();
-    'outer: for (n, properties) in input.lines().map(parse_sue) {
-        for (name, amount) in properties {
-            if *constants.get(name).unwrap() != amount {
-                continue 'outer;
-            }
-        }
-        return n;
-    }
 
-    panic!();
+    input
+        .lines()
+        .map(parse_sue)
+        .find(|(_, properties)| {
+            properties
+                .iter()
+                .all(|(name, amount)| constants.get(name).unwrap() == amount)
+        })
+        .unwrap()
+        .0
 }
 
 fn part2(input: &str) -> u32 {
     let constants = create_constants();
-    'outer: for (n, properties) in input.lines().map(parse_sue) {
-        for (name, amount) in properties {
-            match name {
-                "cats" | "trees" => {
-                    if *constants.get(name).unwrap() >= amount {
-                        continue 'outer;
-                    }
-                }
-                "pomeranians" | "goldfish" => {
-                    if *constants.get(name).unwrap() <= amount {
-                        continue 'outer;
-                    }
-                }
-                _ => {
-                    if *constants.get(name).unwrap() != amount {
-                        continue 'outer;
-                    }
-                }
-            }
-        }
-        return n;
-    }
 
-    panic!();
+    input
+        .lines()
+        .map(parse_sue)
+        .find(|(_, properties)| {
+            properties.iter().all(|(name, amount)| match *name {
+                "cats" | "trees" => constants.get(name).unwrap() < amount,
+                "pomeranians" | "goldfish" => constants.get(name).unwrap() > amount,
+                _ => constants.get(name).unwrap() == amount,
+            })
+        })
+        .unwrap()
+        .0
 }
 
 #[cfg(test)]

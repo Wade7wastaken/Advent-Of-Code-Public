@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use lib::{SwapIf, itertools::Itertools};
+use lib::{itertools::Itertools, select, tern};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -13,7 +13,7 @@ type Happiness<'a> = HashMap<(&'a str, &'a str), i32>;
 fn score_permutation(p: Vec<&str>, happiness: &Happiness) -> i32 {
     p.into_iter()
         .circular_tuple_windows()
-        .map(|(a, b)| happiness.get(&(a, b).swap_if(a.cmp(b).is_lt())).unwrap())
+        .map(|(a, b)| happiness.get(&(a, b)).unwrap())
         .sum()
 }
 
@@ -21,23 +21,15 @@ fn find_max_score(input: &str, scoring_fn: fn(p: Vec<&str>, happiness: &Happines
     let mut people = HashSet::new();
     let mut happiness = HashMap::new();
 
-    for (name, _, sign, n, _, _, _, _, _, _, mut other) in input
-        .lines()
-        .map(|l| l.split_whitespace().collect_tuple().unwrap())
-    {
-        let n: i32 = n.parse().unwrap();
-        let n = match sign {
-            "gain" => n,
-            "lose" => -n,
-            _ => panic!(),
-        };
+    for l in input.lines() {
+        let (name, sign, n, other) = select!(l.split_ascii_whitespace(); 0, 2, 3, 10);
+        let n = n.parse::<i32>().unwrap() * tern!(sign == "gain", 1, -1);
         people.insert(name);
 
-        other = other.strip_suffix('.').unwrap();
+        let other = other.strip_suffix('.').unwrap();
 
-        *happiness
-            .entry((name, other).swap_if(name.cmp(other).is_lt()))
-            .or_default() += n;
+        *happiness.entry((name, other)).or_default() += n;
+        *happiness.entry((other, name)).or_default() += n;
     }
 
     let num_people = people.len();
@@ -57,7 +49,7 @@ fn part1(input: &str) -> u32 {
 fn score_permutation_non_circular(p: Vec<&str>, happiness: &Happiness) -> i32 {
     p.into_iter()
         .tuple_windows()
-        .map(|(a, b)| happiness.get(&(a, b).swap_if(a.cmp(b).is_lt())).unwrap())
+        .map(|(a, b)| happiness.get(&(a, b)).unwrap())
         .sum()
 }
 

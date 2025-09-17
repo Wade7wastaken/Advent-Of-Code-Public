@@ -141,11 +141,11 @@ impl<T> InnerGrid<T> {
         }
     }
 
-    pub fn width(&self) -> usize {
+    pub const fn width(&self) -> usize {
         self.width
     }
 
-    pub fn height(&self) -> usize {
+    pub const fn height(&self) -> usize {
         self.height
     }
 
@@ -173,7 +173,7 @@ impl<T> InnerGrid<T> {
         &self.cols
     }
 
-    pub fn get_both(&self) -> RowsOrCols<&Vec<Vec<T>>> {
+    pub const fn get_both(&self) -> RowsOrCols<&Vec<Vec<T>>> {
         match self.poison {
             PoisonState::None => RowsOrCols::Rows(&self.rows),
             PoisonState::Rows => RowsOrCols::Cols(&self.cols),
@@ -211,7 +211,7 @@ impl<T> InnerGrid<T> {
         &mut self.cols
     }
 
-    pub fn get_both_mut(&mut self) -> RowsOrCols<&mut Vec<Vec<T>>> {
+    pub const fn get_both_mut(&mut self) -> RowsOrCols<&mut Vec<Vec<T>>> {
         match self.poison {
             PoisonState::None => RowsOrCols::Rows(&mut self.rows),
             PoisonState::Rows => RowsOrCols::Cols(&mut self.cols),
@@ -262,7 +262,7 @@ impl<T> InnerGrid<T> {
         }
     }
 
-    pub fn transpose(&mut self) {
+    pub const fn transpose(&mut self) {
         std::mem::swap(&mut self.rows, &mut self.cols);
         self.poison = match self.poison {
             PoisonState::Cols => PoisonState::Rows,

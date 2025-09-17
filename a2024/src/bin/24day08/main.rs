@@ -3,7 +3,7 @@ use std::{
     vec,
 };
 
-use lib::{itertools::Itertools, BaseEntity, CollectHashmap, Grid, Offset, Point2, Swap, Vec2};
+use lib::{Entity, Grid, IteratorExt, Offset, Point2, Swap, Vec2, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -20,7 +20,7 @@ fn get_antennas(grid: Grid<char>) -> HashMap<char, Vec<Point2<usize>>> {
 
 fn part1(input: &str) -> u32 {
     let grid = Grid::from_chars(input).unwrap();
-    let en = BaseEntity::new_on_grid((0, 0), Vec2::EAST, &grid).unwrap();
+    let en = Entity::new_on_grid((0, 0), Vec2::EAST, &grid).unwrap();
     let antennas = get_antennas(grid);
 
     antennas
@@ -33,8 +33,8 @@ fn part1(input: &str) -> u32 {
                     en.set_bounded(b, vector).unwrap(),
                 ]
                 .into_iter()
-                .filter_map(BaseEntity::step_bounded)
-                .map(BaseEntity::pos)
+                .filter_map(Entity::step_bounded)
+                .map(Entity::pos)
             })
         })
         .unique()
@@ -43,7 +43,7 @@ fn part1(input: &str) -> u32 {
 
 fn part2(input: &str) -> u32 {
     let grid = Grid::from_chars(input).unwrap();
-    let en = BaseEntity::new_on_grid((0, 0), Vec2::EAST, &grid).unwrap();
+    let en = Entity::new_on_grid((0, 0), Vec2::EAST, &grid).unwrap();
     let antennas = get_antennas(grid);
 
     let mut seen = HashSet::new();

@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use lib::{
-    CountWhere, SwapIf,
+    IteratorExt, SwapIf,
     itertools::{Either, Itertools},
     tern,
 };
@@ -18,14 +18,19 @@ fn contains_abba(s: &str) -> bool {
         .any(|(a, b, c, d)| a != b && a == d && b == c)
 }
 
+fn partition(l: &str) -> (Vec<&str>, Vec<&str>) {
+    l.split(['[', ']'])
+        .enumerate()
+        .partition_map(|(i, x)| tern!(i % 2 == 0, Either::Left, Either::Right)(x))
+}
+
+fn supports_tls(l: &str) -> bool {
+    let (outside, inside) = partition(l);
+    outside.into_iter().any(contains_abba) && !inside.into_iter().any(contains_abba)
+}
+
 fn part1(input: &str) -> u32 {
-    input.lines().count_where(|l| {
-        let (outside, inside): (Vec<_>, Vec<_>) = l
-            .split(['[', ']'])
-            .enumerate()
-            .partition_map(|(i, x)| tern!(i % 2 == 0, Either::Left, Either::Right)(x));
-        outside.into_iter().any(contains_abba) && !inside.into_iter().any(contains_abba)
-    }) as u32
+    input.lines().count_where(supports_tls) as u32
 }
 
 fn find_abas(v: Vec<&str>, swap: bool) -> HashSet<(char, char)> {
@@ -39,16 +44,15 @@ fn find_abas(v: Vec<&str>, swap: bool) -> HashSet<(char, char)> {
         .collect::<HashSet<_>>()
 }
 
+fn supports_ssl(l: &str) -> bool {
+    let (outside, inside) = partition(l);
+    let abas = find_abas(outside, false);
+    let babs = find_abas(inside, true);
+    abas.intersection(&babs).next().is_some()
+}
+
 fn part2(input: &str) -> u32 {
-    input.lines().count_where(|l| {
-        let (outside, inside): (Vec<_>, Vec<_>) = l
-            .split(['[', ']'])
-            .enumerate()
-            .partition_map(|(i, x)| tern!(i % 2 == 0, Either::Left, Either::Right)(x));
-        let abas = find_abas(outside, false);
-        let babs = find_abas(inside, true);
-        abas.intersection(&babs).next().is_some()
-    }) as u32
+    input.lines().count_where(supports_ssl) as u32
 }
 
 #[cfg(test)]

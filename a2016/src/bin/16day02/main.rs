@@ -1,4 +1,4 @@
-use lib::{CollectDigits, CollectString, Dir, Entity, Grid};
+use lib::{CollectDigits, Dir, Entity, Grid, IteratorExt};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

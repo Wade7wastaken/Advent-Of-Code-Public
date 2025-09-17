@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use lib::itertools::Itertools;
+use lib::{itertools::Itertools, select};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -9,7 +9,7 @@ fn main() {
 }
 
 fn parse_dist_line(line: &str) -> (&str, &str, u32) {
-    let (src, _, end, _, dist) = line.split_ascii_whitespace().collect_tuple().unwrap();
+    let (src, end, dist) = select!(line.split_ascii_whitespace(); 0, 2, 4);
     (src, end, dist.parse().unwrap())
 }
 

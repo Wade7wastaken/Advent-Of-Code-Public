@@ -1,4 +1,4 @@
-use lib::itertools::Itertools;
+use lib::{borrow_loop, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -6,27 +6,27 @@ fn main() {
     println!("{}", part2(input));
 }
 
+
 fn part1(input: &str) -> u32 {
     let mut chars = input.chars();
     let mut count = 0;
-    while let Some(next) = chars.next() {
-        if next.is_ascii_whitespace() {
-            continue;
-        }
-        if next == '(' {
-            let s = chars.take_while_ref(|c| *c != ')').collect::<String>();
-            chars.next().unwrap(); // consume )
-            let (n, times) = s
+
+    borrow_loop!(chars, next, {
+        count += if next == '(' {
+            let (n, times) = chars
+                .by_ref()
+                .take_while(|c| *c != ')')
+                .collect::<String>()
                 .split('x')
                 .map(|s| s.parse::<usize>().unwrap())
                 .collect_tuple()
                 .unwrap();
             chars.nth(n - 1).unwrap();
-            count += n * times;
+            n * times
         } else {
-            count += 1;
-        }
-    }
+            1
+        };
+    });
 
     count as u32
 }
@@ -35,25 +35,22 @@ fn decompress_len(input: &str) -> usize {
     let mut chars = input.chars();
     let mut count = 0;
 
-    while let Some(next) = chars.next() {
-        if next.is_ascii_whitespace() {
-            continue;
-        }
-        if next == '(' {
-            let s = chars.take_while_ref(|c| *c != ')').collect::<String>();
-            chars.next().unwrap(); // consume )
-            let (n, times) = s
+    borrow_loop!(chars, next, {
+        count += if next == '(' {
+            let (n, times) = chars
+                .by_ref()
+                .take_while(|c| *c != ')')
+                .collect::<String>()
                 .split('x')
                 .map(|s| s.parse::<usize>().unwrap())
                 .collect_tuple()
                 .unwrap();
-            let data = (&mut chars).take(n).collect::<String>();
-            let decompressed_len = decompress_len(&data) * times;
-            count += decompressed_len;
+            let data = chars.by_ref().take(n).collect::<String>();
+            decompress_len(&data) * times
         } else {
-            count += 1;
-        }
-    }
+            1
+        };
+    });
 
     count
 }

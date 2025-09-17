@@ -24,10 +24,7 @@ fn find_numbers_without_red(data: Value) -> i64 {
         Value::Number(n) => n.as_i64().unwrap(),
         Value::Array(arr) => arr.into_iter().map(find_numbers_without_red).sum(),
         Value::Object(obj) => {
-            if obj
-                .values()
-                .any(|val| val == &Value::String("red".to_string()))
-            {
+            if obj.values().any(|val| val.as_str() == Some("red")) {
                 return 0;
             }
             obj.into_values().map(find_numbers_without_red).sum()
