@@ -78,8 +78,8 @@ fn part2(input: &str) -> u32 {
 
     'outer: for test_claim in &claims {
         for other in claims.iter().filter(|c| **c != *test_claim) {
-            if test_claim.x_range().overlaps(&other.x_range())
-                && test_claim.y_range().overlaps(&other.y_range())
+            if test_claim.x_range().overlaps(other.x_range())
+                && test_claim.y_range().overlaps(other.y_range())
             {
                 continue 'outer;
             }

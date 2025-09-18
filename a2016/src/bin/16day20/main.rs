@@ -1,4 +1,4 @@
-use lib::{Range, itertools::Itertools};
+use lib::{InclusiveRange, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -15,13 +15,13 @@ fn part1(input: &str) -> u64 {
                 .collect_tuple()
                 .unwrap()
         })
-        .map(|(a, b)| Range::new_inclusive(a, b))
+        .map(|(a, b)| InclusiveRange::new(a, b))
         .collect_vec();
 
     let mut i = 0;
 
-    while let Some(r) = ranges.iter().find(|r| r.contains(&i)) {
-        i = *r.end();
+    while let Some(r) = ranges.iter().find(|r| r.contains(i)) {
+        i = r.end() + 1;
     }
 
     i
@@ -36,15 +36,15 @@ fn part2(input: &str) -> u32 {
                 .collect_tuple()
                 .unwrap()
         })
-        .map(|(a, b)| Range::new_inclusive(a, b))
+        .map(|(a, b)| InclusiveRange::new(a, b))
         .collect_vec();
 
     let mut i: u64 = 0;
     let mut count = 0;
     'outer: while u32::try_from(i).is_ok() {
         for range in &ranges {
-            if range.contains(&i) {
-                i = *range.end();
+            if range.contains(i) {
+                i = range.end() + 1;
                 continue 'outer;
             }
         }

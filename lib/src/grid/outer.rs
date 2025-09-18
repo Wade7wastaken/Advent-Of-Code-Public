@@ -2,7 +2,7 @@ use std::{fmt::Display, hash::Hash, vec};
 
 use itertools::Itertools;
 
-use crate::{point2, tern, Dir, Entity, IteratorExt, Offset, Point2};
+use crate::{Dir, Entity, IteratorExt, Offset, Point2, point2, tern};
 
 use super::inner;
 
@@ -649,8 +649,7 @@ ghi",
 
     #[test]
     fn gravity() {
-        let grid = Grid::from_chars_transpose(
-            "
+        let src = "
 O....#....
 O.OO#....#
 .....##...
@@ -661,13 +660,9 @@ O.#..O.#.#
 .......O..
 #....###..
 #OO..#....
-..........
-",
-        )
-        .unwrap();
+..........";
 
-        // North
-        let answer = "
+        let north = "
 OOOO.#.O..
 OO..#....#
 OO..O##..O
@@ -678,19 +673,9 @@ O..#.OO...
 ..O.......
 #....###..
 #....#....
-..........
-";
-        assert_eq!(
-            grid.clone().apply_gravity(Dir::North, &'.', &['#']).rows(),
-            &answer
-                .trim()
-                .lines()
-                .map(|l| l.chars().collect::<Vec<_>>())
-                .collect::<Vec<_>>()
-        );
+..........";
 
-        // South
-        let answer = "
+        let south = "
 .....#....
 ....#....#
 ...O.##...
@@ -701,19 +686,9 @@ O....#....
 O.....OO..
 #O...###..
 #OO..#....
-.OO.O....O
-";
-        assert_eq!(
-            grid.clone().apply_gravity(Dir::South, &'.', &['#']).rows(),
-            &answer
-                .trim()
-                .lines()
-                .map(|l| l.chars().collect::<Vec<_>>())
-                .collect::<Vec<_>>()
-        );
+.OO.O....O";
 
-        // East
-        let answer = "
+        let east = "
 ....O#....
 .OOO#....#
 .....##...
@@ -724,19 +699,9 @@ O.....OO..
 .........O
 #....###..
 #..OO#....
-..........
-";
-        assert_eq!(
-            grid.clone().apply_gravity(Dir::East, &'.', &['#']).rows(),
-            &answer
-                .trim()
-                .lines()
-                .map(|l| l.chars().collect::<Vec<_>>())
-                .collect::<Vec<_>>()
-        );
+..........";
 
-        // West
-        let answer = "
+        let west = "
 O....#....
 OOO.#....#
 .....##...
@@ -747,16 +712,23 @@ O....#OO..
 O.........
 #....###..
 #OO..#....
-..........
-";
-        assert_eq!(
-            grid.clone().apply_gravity(Dir::West, &'.', &['#']).rows(),
-            &answer
-                .trim()
-                .lines()
-                .map(|l| l.chars().collect::<Vec<_>>())
-                .collect::<Vec<_>>()
-        );
+..........";
+
+        let grid = Grid::from_chars(src.trim()).unwrap();
+
+        let map = [
+            (Dir::North, north),
+            (Dir::South, south),
+            (Dir::East, east),
+            (Dir::West, west),
+        ];
+
+        for (dir, expected) in map {
+            assert_eq!(
+                grid.clone().applied_gravity(dir, &'.', &['#']),
+                Grid::from_chars(expected.trim()).unwrap()
+            );
+        }
     }
 
     macro_rules! enumerate_format {

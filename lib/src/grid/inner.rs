@@ -1,5 +1,6 @@
 use std::hash::Hash;
 
+use derive_more::Display;
 use itertools::Itertools;
 
 use crate::Point2;
@@ -19,7 +20,7 @@ fn transpose<T>(original: Vec<Vec<T>>, width: usize) -> Vec<Vec<T>> {
     transposed
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Display)]
 enum PoisonState {
     Rows, // Mut ref to cols, cols is canonical, rows is poisoned, copy cols into rows
     Cols, // Mut ref to rows, rows is canonical, cols is poisoned, copy rows into cols
@@ -53,11 +54,27 @@ pub struct InnerGrid<T> {
 
 impl<T: PartialEq> PartialEq for InnerGrid<T> {
     fn eq(&self, other: &Self) -> bool {
-        match (&self.poison, &other.poison) {
-            (PoisonState::Rows, PoisonState::Rows) => self.cols == other.cols,
-            (PoisonState::Cols, PoisonState::Cols) => self.rows == other.rows,
-            _ => panic!("Unable to call eq on grids with different poison states"),
+        if let Some(my_rows) = self.get_rows_checked()
+            && let Some(other_rows) = other.get_rows_checked()
+        {
+            return my_rows == other_rows;
         }
+        if let Some(my_cols) = self.get_cols_checked()
+            && let Some(other_cols) = other.get_cols_checked()
+        {
+            return my_cols == other_cols;
+        }
+
+        panic!(
+            "Unable to call eq on grids with different poison states {} with {}",
+            self.poison, other.poison
+        );
+
+        // match (&self.poison, &other.poison) {
+        //     (PoisonState::Rows, PoisonState::Rows) => self.cols == other.cols,
+        //     (PoisonState::Cols, PoisonState::Cols) => self.rows == other.rows,
+        //     _ => ,
+        // }
     }
 }
 
@@ -171,6 +188,14 @@ impl<T> InnerGrid<T> {
     pub fn get_cols(&self) -> &Vec<Vec<T>> {
         self.assert_cols();
         &self.cols
+    }
+
+    pub fn get_rows_checked(&self) -> Option<&Vec<Vec<T>>> {
+        (self.poison != PoisonState::Rows).then_some(&self.rows)
+    }
+
+    pub fn get_cols_checked(&self) -> Option<&Vec<Vec<T>>> {
+        (self.poison != PoisonState::Cols).then_some(&self.cols)
     }
 
     pub const fn get_both(&self) -> RowsOrCols<&Vec<Vec<T>>> {

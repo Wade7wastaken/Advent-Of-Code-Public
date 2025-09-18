@@ -1,4 +1,4 @@
-use lib::{IteratorExt, Range, itertools::Itertools};
+use lib::{InclusiveRange, IteratorExt, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -6,19 +6,19 @@ fn main() {
     // println!("{}", part2(input));
 }
 
-fn parse_range(r: &str) -> Range<u32> {
+fn parse_range(r: &str) -> InclusiveRange<u32> {
     let (a, b) = r
         .split('-')
         .map(|d| d.parse().unwrap())
         .collect_tuple()
         .unwrap();
-    Range::new_inclusive(a, b)
+    InclusiveRange::new(a, b)
 }
 
 fn part1(input: &str) -> u32 {
     input.lines().count_where(|l| {
         let (r1, r2) = l.split(',').map(parse_range).collect_tuple().unwrap();
-        r1.contains_range(&r2) || r2.contains_range(&r1)
+        r1.covers(r2) || r2.covers(r1)
     }) as u32
 }
 
