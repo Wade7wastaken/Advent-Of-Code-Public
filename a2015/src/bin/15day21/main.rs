@@ -16,7 +16,7 @@ struct Entity {
 }
 
 impl Entity {
-    fn new_player(damage: i32, armor: i32) -> Self {
+    const fn new_player(damage: i32, armor: i32) -> Self {
         Self {
             hp: 100,
             damage,

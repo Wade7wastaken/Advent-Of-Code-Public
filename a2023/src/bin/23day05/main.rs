@@ -1,4 +1,4 @@
-use lib::{Range, Ranged, StringTools, itertools::Itertools};
+use lib::{Range, Ranged, StringTools, itertools::Itertools, pop_loop};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -81,25 +81,21 @@ fn part2(input: &str) -> i64 {
     let mut output = Vec::new();
 
     for map in almanac.maps {
-        'a: while let Some(attribute_range) = to_process.pop() {
-            for map_line in &map {
-                if map_line.target_range.overlaps(attribute_range) {
-                    output.push(
-                        attribute_range.intersection(map_line.target_range).unwrap()
-                            + map_line.offset,
-                    );
+        pop_loop!(to_process, attr_range, {
+            let found = map
+                .iter()
+                .find(|map_line| map_line.target_range.overlaps(attr_range));
 
-                    // push residue to to_process
-                    for residue in attribute_range.remove(map_line.target_range) {
-                        to_process.push(residue);
-                    }
+            let outputted = if let Some(map_line) = found {
+                to_process.extend(attr_range.remove(map_line.target_range));
+                attr_range.intersection(map_line.target_range).unwrap() + map_line.offset
+            } else {
+                attr_range
+            };
 
-                    continue 'a;
-                }
-            }
-            // didn't find it, so it stays unchanged.
-            output.push(attribute_range);
-        }
+            output.push(outputted);
+        });
+
         to_process = output;
         output = Vec::new();
     }

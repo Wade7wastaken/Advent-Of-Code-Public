@@ -15,7 +15,7 @@ fn part1(input: &str) -> u32 {
                 .collect_tuple()
                 .unwrap()
         })
-        .filter(|(index, len)| (index % (len + len - 2) == 0))
+        .filter(|(index, len)| index % (len + len - 2) == 0)
         .map(|(index, len)| index * len)
         .sum()
 }
@@ -35,7 +35,7 @@ fn part2(input: &str) -> u32 {
         .find(|start| {
             scanners
                 .iter()
-                .all(|(index, len)| ((index + start) % (len + len - 2) != 0))
+                .all(|(index, len)| (index + start) % (len + len - 2) != 0)
         })
         .unwrap()
 }

@@ -11,7 +11,7 @@ fn main() {
     println!("{}", part2(input));
 }
 
-fn rng(input: u64) -> u64 {
+const fn rng(input: u64) -> u64 {
     let s1 = ((input * 64) ^ input) % 16777216;
     let s2 = ((s1 / 32) ^ s1) % 16777216;
     ((s2 * 2048) ^ s2) % 16777216

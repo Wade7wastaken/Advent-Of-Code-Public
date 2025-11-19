@@ -15,8 +15,8 @@ pub trait IteratorExt: Iterator + Sized {
 
     fn collect_hashmap<K: Hash + Eq, Value, Bucket, R>(
         self,
-        f_free: impl FnMut(Value) -> Bucket,
-        f_taken: impl FnMut(&mut Bucket, Value) -> R,
+        insert: impl FnMut(Value) -> Bucket,
+        append: impl FnMut(&mut Bucket, Value) -> R,
     ) -> HashMap<K, Bucket>
     where
         Self: Iterator<Item = (K, Value)>;
@@ -27,10 +27,10 @@ pub trait IteratorExt: Iterator + Sized {
 
     fn count_where<F: FnMut(Self::Item) -> bool>(self, f: F) -> usize;
 
-    fn apply<State: Clone, F: FnMut(State, Self::Item) -> State>(
+    fn apply<State: Clone>(
         self,
         init: State,
-        f: F,
+        f: impl FnMut(State, Self::Item) -> State,
     ) -> Scan<Self, State, impl FnMut(&mut State, Self::Item) -> Option<State>>;
 
     fn detect_cycle(self) -> Option<(usize, usize, Vec<Self::Item>)>
@@ -56,8 +56,8 @@ impl<I: Iterator> IteratorExt for I {
     /// existing value.
     fn collect_hashmap<K: Hash + Eq, Value, Bucket, R>(
         self,
-        mut f_free: impl FnMut(Value) -> Bucket,
-        mut f_taken: impl FnMut(&mut Bucket, Value) -> R,
+        mut insert: impl FnMut(Value) -> Bucket,
+        mut append: impl FnMut(&mut Bucket, Value) -> R,
     ) -> HashMap<K, Bucket>
     where
         Self: Iterator<Item = (K, Value)>,
@@ -65,9 +65,9 @@ impl<I: Iterator> IteratorExt for I {
         let mut map = HashMap::new();
         for (k, v) in self {
             if let Some(v2) = map.get_mut(&k) {
-                f_taken(v2, v);
+                append(v2, v);
             } else {
-                map.insert(k, f_free(v));
+                map.insert(k, insert(v));
             }
         }
         map
@@ -88,10 +88,10 @@ impl<I: Iterator> IteratorExt for I {
 
     /// Applies a mapping function to an iterator, but the previously returned
     /// item is available in the mapping function.
-    fn apply<State: Clone, F: FnMut(State, Self::Item) -> State>(
+    fn apply<State: Clone>(
         self,
         init: State,
-        mut f: F,
+        mut f: impl FnMut(State, Self::Item) -> State,
     ) -> Scan<Self, State, impl FnMut(&mut State, Self::Item) -> Option<State>> {
         self.scan(init, move |st, x| {
             let res = f(st.clone(), x);

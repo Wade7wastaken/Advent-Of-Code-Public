@@ -42,7 +42,7 @@ impl Choice {
     }
 
     // what opponent has already played
-    fn response_to_get(self, outcome: &Outcome) -> Choice {
+    const fn response_to_get(self, outcome: &Outcome) -> Choice {
         match outcome {
             Outcome::Tie => self,
             Outcome::Win => match self {
@@ -58,7 +58,7 @@ impl Choice {
         }
     }
 
-    fn score(&self) -> u32 {
+    const fn score(&self) -> u32 {
         match self {
             Self::Rock => 1,
             Self::Paper => 2,
@@ -77,7 +77,7 @@ impl Outcome {
         }
     }
 
-    fn score(&self) -> u32 {
+    const fn score(&self) -> u32 {
         match self {
             Self::Win => 6,
             Self::Tie => 3,

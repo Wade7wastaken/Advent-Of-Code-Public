@@ -48,8 +48,8 @@ fn part1(input: &str) -> u32 {
             let get_row = |row| grid.row(row).unwrap();
             let get_col = |col| grid.col(col).unwrap();
             find_reflection_line(grid.height(), get_row)
-                .map(|i| ((i + 1) * 100))
-                .or_else(|| find_reflection_line(grid.width(), get_col).map(|i| (i + 1)))
+                .map(|i| (i + 1) * 100)
+                .or_else(|| find_reflection_line(grid.width(), get_col).map(|i| i + 1))
                 .unwrap()
         })
         .sum::<usize>() as u32
@@ -63,10 +63,8 @@ fn part2(input: &str) -> u32 {
             let get_row = |row| grid.row(row).unwrap();
             let get_col = |col| grid.col(col).unwrap();
             find_reflection_line_with_smudge(grid.height(), get_row)
-                .map(|i| ((i + 1) * 100))
-                .or_else(|| {
-                    find_reflection_line_with_smudge(grid.width(), get_col).map(|i| (i + 1))
-                })
+                .map(|i| (i + 1) * 100)
+                .or_else(|| find_reflection_line_with_smudge(grid.width(), get_col).map(|i| i + 1))
                 .unwrap()
         })
         .sum::<usize>() as u32

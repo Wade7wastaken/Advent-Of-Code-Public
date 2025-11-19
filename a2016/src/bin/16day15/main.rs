@@ -22,10 +22,9 @@ fn parse_disc(l: &str) -> Disc {
 fn find_time(discs: &[Disc]) -> u32 {
     (0..u32::MAX)
         .find(|t_drop| {
-            discs
-                .iter()
-                .enumerate()
-                .all(|(i, disc)| (disc.start_pos + t_drop + i as u32 + 1) % disc.num_positions == 0)
+            discs.iter().enumerate().all(|(i, disc)| {
+                (disc.start_pos + t_drop + i as u32 + 1).is_multiple_of(disc.num_positions)
+            })
         })
         .unwrap()
 }

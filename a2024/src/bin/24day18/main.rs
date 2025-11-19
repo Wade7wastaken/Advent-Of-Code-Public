@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use lib::{a_star_score, a_star_single, itertools::Itertools, Dir, Grid, Point2};
+use lib::{Dir, Grid, Point2, a_star_score, a_star_single, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

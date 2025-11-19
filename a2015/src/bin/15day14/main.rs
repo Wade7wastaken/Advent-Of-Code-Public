@@ -21,7 +21,7 @@ struct Reindeer {
 }
 
 impl Reindeer {
-    fn new(speed: u32, fly_time: u32, rest_time: u32) -> Self {
+    const fn new(speed: u32, fly_time: u32, rest_time: u32) -> Self {
         Self {
             speed,
             fly_time,
@@ -33,7 +33,7 @@ impl Reindeer {
         }
     }
 
-    fn tick(&mut self) {
+    const fn tick(&mut self) {
         if self.fly_timer == 0 {
             // resting
             self.rest_timer -= 1;

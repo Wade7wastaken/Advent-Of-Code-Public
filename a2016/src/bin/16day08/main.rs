@@ -111,7 +111,7 @@ fn recognize_text(grid: &Grid<bool>) -> String {
         (create_grid(S_DATA), b'S'),
         (create_grid(Y_DATA), b'Y'),
     ]);
-    assert!(grid.width() % 5 == 0);
+    assert!(grid.width().is_multiple_of(5));
     (0..grid.width())
         .step_by(5)
         .map(|i| {

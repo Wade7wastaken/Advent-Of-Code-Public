@@ -8,7 +8,7 @@ use derive_more::derive::{
 };
 use num::{CheckedAdd, CheckedSub, Float, Num};
 
-use crate::{abs_diff, tern, Offset, Vec2};
+use crate::{Offset, Vec2, abs_diff, tern};
 
 /// Represents a point in 2d space.
 #[derive(
@@ -93,15 +93,13 @@ impl<T: Num + Copy> Point2<T> {
     where
         T: CheckedAdd + CheckedSub + TryFrom<isize>,
     {
-        type F<T> = fn(&T, &T) -> Option<T>;
-
         let dir: Vec2 = dir.into();
 
-        let x_op: F<T> = tern!(dir.x < 0, T::checked_sub, T::checked_add);
+        let x_op = tern!(dir.x < 0, T::checked_sub, T::checked_add);
         let new = T::one() * dir.x.abs().try_into().ok()?;
         self.x = x_op(&self.x, &new)?;
 
-        let y_op: F<T> = tern!(dir.y < 0, T::checked_sub, T::checked_add);
+        let y_op = tern!(dir.y < 0, T::checked_sub, T::checked_add);
         let new = T::one() * dir.y.abs().try_into().ok()?;
         self.y = y_op(&self.y, &new)?;
 

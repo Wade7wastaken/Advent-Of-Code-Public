@@ -1,4 +1,4 @@
-use lib::{itertools::Itertools, Grid, Point2, Range, Ranged};
+use lib::{Grid, Point2, Range, Ranged, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -14,7 +14,7 @@ enum ClaimCell {
 }
 
 impl ClaimCell {
-    fn claim(&mut self) {
+    const fn claim(&mut self) {
         *self = match *self {
             Self::NotClaimed => Self::ClaimedOnce,
             Self::ClaimedOnce => Self::ClaimedTwice,

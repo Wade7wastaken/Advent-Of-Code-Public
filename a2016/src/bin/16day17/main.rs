@@ -1,4 +1,8 @@
-use lib::{a_star_single, md5::{Digest, Md5}, point2, Dir, IteratorExt, Point2};
+use lib::{
+    Dir, IteratorExt, Point2, a_star_single,
+    md5::{Digest, Md5},
+    point2,
+};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

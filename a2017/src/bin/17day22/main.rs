@@ -46,7 +46,7 @@ enum State {
 }
 
 impl State {
-    fn advance(&mut self) {
+    const fn advance(&mut self) {
         *self = match *self {
             State::Clean => State::Weakened,
             State::Weakened => State::Infected,

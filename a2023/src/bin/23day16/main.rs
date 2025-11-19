@@ -12,7 +12,7 @@ struct Cell {
     visited: [bool; 4],
 }
 
-fn reflect_tilted_mirror(dir: Dir) -> Dir {
+const fn reflect_tilted_mirror(dir: Dir) -> Dir {
     match dir {
         Dir::North => Dir::East,
         Dir::South => Dir::West,

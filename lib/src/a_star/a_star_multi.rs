@@ -22,13 +22,13 @@ pub struct AStarMulti<C, Cost, EndCond, Neighbors, H> {
 }
 
 impl<
-        C: Clone + PartialEq + Eq + Hash,
-        Cost: Clone + Ord + Zero,
-        EndCond: FnMut(&C) -> bool,
-        I: IntoIterator<Item = (C, Cost)>,
-        Neighbors: FnMut(&C) -> I,
-        H: FnMut(&C) -> Cost,
-    > AStarMulti<C, Cost, EndCond, Neighbors, H>
+    C: Clone + PartialEq + Eq + Hash,
+    Cost: Clone + Ord + Zero,
+    EndCond: FnMut(&C) -> bool,
+    I: IntoIterator<Item = (C, Cost)>,
+    Neighbors: FnMut(&C) -> I,
+    H: FnMut(&C) -> Cost,
+> AStarMulti<C, Cost, EndCond, Neighbors, H>
 {
     pub fn new(starts: Vec<C>, end_cond: EndCond, neighbors: Neighbors, mut h: H) -> Self {
         let mut open_set = BinaryHeap::with_capacity(starts.len());
@@ -62,13 +62,13 @@ impl<
 }
 
 impl<
-        C: Clone + PartialEq + Eq + Hash,
-        Cost: Clone + Ord + Zero,
-        EndCond: FnMut(&C) -> bool,
-        I: IntoIterator<Item = (C, Cost)>,
-        Neighbors: FnMut(&C) -> I,
-        H: FnMut(&C) -> Cost,
-    > Iterator for AStarMulti<C, Cost, EndCond, Neighbors, H>
+    C: Clone + PartialEq + Eq + Hash,
+    Cost: Clone + Ord + Zero,
+    EndCond: FnMut(&C) -> bool,
+    I: IntoIterator<Item = (C, Cost)>,
+    Neighbors: FnMut(&C) -> I,
+    H: FnMut(&C) -> Cost,
+> Iterator for AStarMulti<C, Cost, EndCond, Neighbors, H>
 {
     type Item = C;
 

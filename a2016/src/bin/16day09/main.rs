@@ -6,7 +6,6 @@ fn main() {
     println!("{}", part2(input));
 }
 
-
 fn part1(input: &str) -> u32 {
     let mut chars = input.chars();
     let mut count = 0;

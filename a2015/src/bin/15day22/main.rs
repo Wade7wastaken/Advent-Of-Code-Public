@@ -24,7 +24,7 @@ struct GameState {
 }
 
 impl GameState {
-    fn spend_mana(&mut self, n: i32) -> Option<()> {
+    const fn spend_mana(&mut self, n: i32) -> Option<()> {
         self.player_mana -= n;
         self.player_mana_spent += n;
 
@@ -34,7 +34,7 @@ impl GameState {
         Some(())
     }
 
-    fn apply_effects(&mut self) {
+    const fn apply_effects(&mut self) {
         if self.shield_timer > 0 {
             self.shield_timer -= 1;
         }

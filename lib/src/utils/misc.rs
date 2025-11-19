@@ -1,10 +1,5 @@
 use std::{hint::unreachable_unchecked, ops::Sub};
 
-use md5::{
-    digest::{Output, OutputSizeUser},
-    Digest,
-};
-
 use crate::{defer, tern};
 
 /// Equivalent to `(a-b).abs()` but underflow safe.
@@ -51,13 +46,8 @@ pub fn to_char(x: u8) -> u8 {
     }
 }
 
-// pub trait DigestHex<T> {
-//     fn to_hex(&self) -> [u8; 32];
-//     fn hex_digit(&self, i: usize) -> u8;
-// }
-
-// impl<T: OutputSizeUser> DigestHex<T> for Output<T> {
 /// Transforms a Digest into 32 hex digits.
+#[must_use]
 pub fn to_hex(data: [u8; 16]) -> [u8; 32] {
     let mut res = [0; 32];
     for i in 0..16 {
@@ -69,9 +59,9 @@ pub fn to_hex(data: [u8; 16]) -> [u8; 32] {
 }
 
 /// Retrieves a specific hex digit from a Digest.
+#[must_use]
 pub fn hex_digit(data: &[u8], i: usize) -> u8 {
     let a = data[i / 2];
-    let b = tern!(i % 2 == 0, a >> 4, a & 0xf);
+    let b = tern!(i.is_multiple_of(2), a >> 4, a & 0xf);
     to_char(b)
 }
-// }

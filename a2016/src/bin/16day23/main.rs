@@ -35,7 +35,7 @@ enum Instr {
 }
 
 impl Instr {
-    fn toggle(&mut self) {
+    const fn toggle(&mut self) {
         *self = match *self {
             Instr::Cpy(x, y) => Instr::Jnz(x, y),
             Instr::Inc(x) => Instr::Dec(x),
@@ -66,11 +66,11 @@ struct Computer {
 }
 
 impl Computer {
-    fn new(a: i32, b: i32, c: i32, d: i32) -> Self {
+    const fn new(a: i32, b: i32, c: i32, d: i32) -> Self {
         Self { a, b, c, d, pc: 0 }
     }
 
-    fn reg(&mut self, r: Register) -> Option<&mut i32> {
+    const fn reg(&mut self, r: Register) -> Option<&mut i32> {
         match r {
             Register::A => Some(&mut self.a),
             Register::B => Some(&mut self.b),
@@ -80,7 +80,7 @@ impl Computer {
         }
     }
 
-    fn value(&self, r: Register) -> i32 {
+    const fn value(&self, r: Register) -> i32 {
         match r {
             Register::A => self.a,
             Register::B => self.b,

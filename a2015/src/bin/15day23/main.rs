@@ -13,24 +13,24 @@ struct Computer {
 }
 
 impl Computer {
-    fn new() -> Self {
+    const fn new() -> Self {
         Computer { a: 0, b: 0, ip: 0 }
     }
 
-    fn reg(&mut self, reg: Register) -> &mut u32 {
+    const fn reg(&mut self, reg: Register) -> &mut u32 {
         match reg {
             Register::A => &mut self.a,
             Register::B => &mut self.b,
         }
     }
-    fn exeucte_instr(&mut self, instr: Instr) {
+    const fn execute_instr(&mut self, instr: Instr) {
         match instr {
             Instr::Hlf(r) => *self.reg(r) /= 2,
             Instr::Tpl(r) => *self.reg(r) *= 3,
             Instr::Inc(r) => *self.reg(r) += 1,
             Instr::Jmp(offset) => self.ip += offset - 1,
             Instr::Jie(r, offset) => {
-                if *self.reg(r) % 2 == 0 {
+                if self.reg(r).is_multiple_of(2) {
                     self.ip += offset - 1;
                 }
             }
@@ -44,7 +44,7 @@ impl Computer {
     }
     fn run(&mut self, instrs: &[Instr]) {
         while let Some(instr) = self.ip.try_into().ok().and_then(|ip: usize| instrs.get(ip)) {
-            self.exeucte_instr(*instr);
+            self.execute_instr(*instr);
         }
     }
 }

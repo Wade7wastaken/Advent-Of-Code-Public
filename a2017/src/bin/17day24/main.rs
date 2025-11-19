@@ -47,7 +47,7 @@ struct BridgeInfo {
 }
 
 impl BridgeInfo {
-    fn add_connector(mut self, connector: (u32, u32)) -> Self {
+    const fn add_connector(mut self, connector: (u32, u32)) -> Self {
         self.strength += connector.0 + connector.1;
         self.length += 1;
         self

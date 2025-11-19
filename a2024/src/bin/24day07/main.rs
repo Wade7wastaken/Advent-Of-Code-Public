@@ -19,7 +19,7 @@ fn parse_operation(line: &str) -> Operation {
     Operation { target, nums }
 }
 
-fn concat(rhs: u64, lhs: u64) -> u64 {
+const fn concat(rhs: u64, lhs: u64) -> u64 {
     rhs * 10u64.pow(lhs.ilog10() + 1) + lhs
 }
 

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ops::RangeInclusive};
 
-use lib::{a_star_single, Dir, Grid, Swap, Vec2};
+use lib::{Dir, Grid, Swap, Vec2, a_star_single};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -8,7 +8,7 @@ fn main() {
     println!("{}", part2(input));
 }
 
-fn range(r: isize) -> RangeInclusive<isize> {
+const fn range(r: isize) -> RangeInclusive<isize> {
     -r..=r
 }
 

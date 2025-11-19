@@ -3,7 +3,7 @@ use std::{
     ops::{Add, Mul},
 };
 
-use crate::{tern, Inline};
+use crate::{Inline, tern};
 
 #[derive(Debug, Default, Clone, Eq)]
 pub struct DigitIter {

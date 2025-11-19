@@ -1,4 +1,4 @@
-use lib::{a_star_score, Dir, Entity, Grid, Point2};
+use lib::{Dir, Entity, Grid, Point2, a_star_score};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

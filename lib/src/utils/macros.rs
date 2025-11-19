@@ -1,11 +1,7 @@
 #[macro_export]
 macro_rules! tern {
     ($cond:expr, $a:expr, $b:expr) => {
-        if $cond {
-            $a
-        } else {
-            $b
-        }
+        if $cond { $a } else { $b }
     };
 }
 
@@ -45,6 +41,15 @@ macro_rules! defer {
 macro_rules! borrow_loop {
     ($iter:expr, $var:ident, $body:expr) => {{
         while let Some($var) = $iter.next() {
+            $body
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! pop_loop {
+    ($v:expr, $var:ident, $body:expr) => {{
+        while let Some($var) = $v.pop() {
             $body
         }
     }};

@@ -14,7 +14,7 @@ fn process_stone(stone: u64) -> Vec<u64> {
     }
     let log = stone.ilog10() + 1;
     tern!(
-        log % 2 == 0,
+        log.is_multiple_of(2),
         vec![stone / 10_u64.pow(log / 2), stone % 10_u64.pow(log / 2)],
         vec![stone * 2024]
     )

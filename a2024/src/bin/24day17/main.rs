@@ -54,7 +54,7 @@ impl Computer {
         }
     }
 
-    fn combo(&self, operand: u64) -> u64 {
+    const fn combo(&self, operand: u64) -> u64 {
         match operand {
             0..=3 => operand,
             4 => self.a,

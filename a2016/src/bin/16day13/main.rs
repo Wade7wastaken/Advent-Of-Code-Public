@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use lib::{a_star_score, point2, Dir, Point2};
+use lib::{Dir, Point2, a_star_score, point2};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -10,7 +10,9 @@ fn main() {
 
 const fn is_open(p: Point2<usize>, n: usize) -> bool {
     let Point2 { x, y } = p;
-    (x * x + 3 * x + 2 * x * y + y + y * y + n).count_ones() % 2 == 0
+    (x * x + 3 * x + 2 * x * y + y + y * y + n)
+        .count_ones()
+        .is_multiple_of(2)
 }
 
 fn neighbors(p: Point2<usize>, n: usize) -> impl Iterator<Item = Point2<usize>> {

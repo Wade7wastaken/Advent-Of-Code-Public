@@ -31,7 +31,7 @@ fn parse_claw_machine(input: &str, add: bool) -> ClawMachine {
     ClawMachine { prize, a, b }
 }
 
-fn press_buttons(ClawMachine { prize, a, b }: ClawMachine) -> Option<(i64, i64)> {
+const fn press_buttons(ClawMachine { prize, a, b }: ClawMachine) -> Option<(i64, i64)> {
     let x_numer = b.x * prize.y - prize.x * b.y;
     let denom = b.x * a.y - a.x * b.y;
     if x_numer % denom != 0 {

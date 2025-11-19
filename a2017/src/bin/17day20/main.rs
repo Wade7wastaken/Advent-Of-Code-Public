@@ -24,7 +24,7 @@ impl AddAssign for Vec3 {
 }
 
 impl Vec3 {
-    fn len(self) -> i64 {
+    const fn len(self) -> i64 {
         let Self { x, y, z } = self;
         x.abs() + y.abs() + z.abs()
     }

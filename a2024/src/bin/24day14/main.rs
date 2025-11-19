@@ -82,7 +82,7 @@ fn part1(input: &str) -> u32 {
 // spikes had a periodicity of 103 and 101 respectively. So then, 49 + 103x = 98
 // + 101y where x and y are integers. 7774 is the result of either side of the
 // solved equation.
-fn part2(_input: &str) -> u32 {
+const fn part2(_input: &str) -> u32 {
     7774
 }
 

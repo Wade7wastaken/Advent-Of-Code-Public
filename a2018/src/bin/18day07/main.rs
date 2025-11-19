@@ -76,7 +76,7 @@ struct Worker {
 }
 
 impl Worker {
-    fn work(&mut self) -> Option<u8> {
+    const fn work(&mut self) -> Option<u8> {
         if self.timer == 0 {
             self.working = false;
             return Some(self.working_on);
@@ -85,7 +85,7 @@ impl Worker {
         None
     }
 
-    fn take(&mut self, job: u8) {
+    const fn take(&mut self, job: u8) {
         self.working = true;
         self.timer = 60 + job - b'A';
         self.working_on = job;
