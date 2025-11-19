@@ -1,15 +1,14 @@
-use lib::{StringTools, itertools::Itertools};
+use lib::{Range, Ranged, StringTools, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
     println!("{}", part1(input));
-    // println!("{}", part2(input));
+    println!("{}", part2(input));
 }
 
 struct AttributeMap {
-    dest_start: u32,
-    src_start: u32,
-    length: u32,
+    target_range: Range<i64>,
+    offset: i64,
 }
 
 fn parse_attribute_map(s: &str) -> AttributeMap {
@@ -20,14 +19,13 @@ fn parse_attribute_map(s: &str) -> AttributeMap {
         .unwrap();
 
     AttributeMap {
-        dest_start,
-        src_start,
-        length,
+        target_range: Range::new_by_len(src_start, length),
+        offset: dest_start - src_start,
     }
 }
 
 struct Almanac {
-    seeds: Vec<u32>,
+    seeds: Vec<i64>,
     maps: Vec<Vec<AttributeMap>>,
 }
 
@@ -49,43 +47,64 @@ fn parse_almanac(s: &str) -> Almanac {
     Almanac { seeds, maps }
 }
 
-fn map_attribute(attribute: u32, map: &Vec<AttributeMap>) -> u32 {
-    for map_line in map {
-        if attribute >= map_line.src_start {
-            let offset = attribute - map_line.src_start;
-            if offset < map_line.length {
-                return map_line.dest_start + offset;
-            }
-        }
-    }
-    attribute
+fn map_attribute(attribute: i64, map: &[AttributeMap]) -> i64 {
+    map.iter()
+        .find(|map_line| map_line.target_range.contains(attribute))
+        .map_or(attribute, |map_line| attribute + map_line.offset)
 }
 
-fn part1(input: &str) -> u32 {
+fn part1(input: &str) -> i64 {
     let almanac = parse_almanac(input);
 
     almanac
         .seeds
         .into_iter()
-        .map(|seed| almanac.maps.iter().fold(seed, map_attribute))
+        .map(|seed| {
+            almanac
+                .maps
+                .iter()
+                .fold(seed, |attribute, map| map_attribute(attribute, map))
+        })
         .min()
         .unwrap()
 }
 
-fn part2(input: &str) -> u32 {
+fn part2(input: &str) -> i64 {
     let almanac: Almanac = parse_almanac(input);
 
-    almanac
+    let mut to_process = almanac
         .seeds
         .chunks(2)
-        .flat_map(|seed_range| {
-            let result = (seed_range[0]..seed_range[0] + seed_range[1])
-                .map(|seed| almanac.maps.iter().fold(seed, map_attribute));
-            println!("Done with seed map {seed_range:?}");
-            result
-        })
-        .min()
-        .unwrap()
+        .map(|c| Range::new_by_len(c[0], c[1]))
+        .collect_vec();
+
+    let mut output = Vec::new();
+
+    for map in almanac.maps {
+        'a: while let Some(attribute_range) = to_process.pop() {
+            for map_line in &map {
+                if map_line.target_range.overlaps(attribute_range) {
+                    output.push(
+                        attribute_range.intersection(map_line.target_range).unwrap()
+                            + map_line.offset,
+                    );
+
+                    // push residue to to_process
+                    for residue in attribute_range.remove(map_line.target_range) {
+                        to_process.push(residue);
+                    }
+
+                    continue 'a;
+                }
+            }
+            // didn't find it, so it stays unchanged.
+            output.push(attribute_range);
+        }
+        to_process = output;
+        output = Vec::new();
+    }
+
+    to_process.into_iter().map(Range::start).min().unwrap()
 }
 
 #[cfg(test)]
@@ -96,6 +115,6 @@ mod tests {
     fn test_day() {
         let input = include_str!("./input.txt").trim();
         assert_eq!(part1(input), 111627841);
-        // assert_eq!(part2(input), 69323688);
+        assert_eq!(part2(input), 69323688);
     }
 }

@@ -5,6 +5,7 @@ mod grid;
 mod offset;
 mod point2;
 mod range;
+mod range_set;
 mod utils;
 
 pub use crate::a_star::*;
@@ -15,6 +16,7 @@ pub use crate::md5::*;
 pub use crate::offset::*;
 pub use crate::point2::*;
 pub use crate::range::*;
+pub use crate::range_set::*;
 pub use crate::utils::*;
 pub use derive_more;
 pub use indexmap;

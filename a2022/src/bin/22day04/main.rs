@@ -1,4 +1,4 @@
-use lib::{InclusiveRange, IteratorExt, itertools::Itertools};
+use lib::{itertools::Itertools, InclusiveRange, IteratorExt, Ranged};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

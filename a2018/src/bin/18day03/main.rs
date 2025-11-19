@@ -1,4 +1,4 @@
-use lib::{Grid, Point2, Range, itertools::Itertools};
+use lib::{itertools::Itertools, Grid, Point2, Range, Ranged};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
