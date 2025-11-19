@@ -11,6 +11,7 @@ derive_more = { version = "2.0.1", features = [
     "mul_assign",
     "not",
     "display",
+    "is_variant"
 ] }
 either = "1.13.0"
 indexmap = "2.10.0"
