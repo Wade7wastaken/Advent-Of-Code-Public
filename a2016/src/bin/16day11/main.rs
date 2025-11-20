@@ -1,4 +1,6 @@
-use lib::{a_star_score, itertools::Itertools};
+use std::collections::HashMap;
+
+use lib::{Inline, a_star_score, defer, itertools::Itertools, tern};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -6,82 +8,7 @@ fn main() {
     println!("{}", part2(input));
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-enum Object {
-    Generator(&'static str),
-    Microchip(&'static str),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-struct State {
-    f1: Vec<Object>,
-    f2: Vec<Object>,
-    f3: Vec<Object>,
-    f4: Vec<Object>,
-    elevator: u8,
-}
-
-impl State {
-    fn floor(&self, f: u8) -> &Vec<Object> {
-        match f {
-            1 => &self.f1,
-            2 => &self.f2,
-            3 => &self.f3,
-            4 => &self.f4,
-            _ => panic!("{f}"),
-        }
-    }
-    fn cur_floor(&self) -> &Vec<Object> {
-        self.floor(self.elevator)
-    }
-
-    const fn floor_mut(&mut self, f: u8) -> &mut Vec<Object> {
-        match f {
-            1 => &mut self.f1,
-            2 => &mut self.f2,
-            3 => &mut self.f3,
-            4 => &mut self.f4,
-            _ => panic!(),
-        }
-    }
-    const fn cur_floor_mut(&mut self) -> &mut Vec<Object> {
-        self.floor_mut(self.elevator)
-    }
-
-    fn is_valid(&self) -> bool {
-        for i in 1..=4 {
-            let floor = self.floor(i);
-            if has_rtg(floor) && has_unprotected_chip(floor) {
-                return false;
-            }
-        }
-        true
-    }
-}
-
-fn has_rtg(floor: &[Object]) -> bool {
-    floor.iter().any(|it| match it {
-        Object::Generator(_) => true,
-        Object::Microchip(_) => false,
-    })
-}
-
-fn has_unprotected_chip(floor: &Vec<Object>) -> bool {
-    for it in floor {
-        match it {
-            Object::Generator(_) => {}
-            Object::Microchip(chip) => {
-                let has_connected = floor.contains(&Object::Generator(chip));
-                if !has_connected {
-                    return true;
-                }
-            }
-        }
-    }
-    false
-}
-
-fn parse_floor(l: &'static str) -> Vec<Object> {
+fn parse_floor(l: &str) -> Vec<(&str, bool)> {
     if l.ends_with("relevant.") {
         return vec![];
     }
@@ -101,119 +28,158 @@ fn parse_floor(l: &'static str) -> Vec<Object> {
                 .collect_tuple()
                 .unwrap()
             {
-                (element, "generator") => Object::Generator(element),
-                (element, "microchip") => {
-                    Object::Microchip(element.strip_suffix("-compatible").unwrap())
-                }
+                (element, "generator") => (element, true),
+                (element, "microchip") => (element.strip_suffix("-compatible").unwrap(), false),
                 _ => panic!(),
             }
         })
-        .sorted()
         .collect()
 }
 
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+struct State {
+    elevator: u8,
+    pairs: Vec<(u8, u8)>,
+}
+
+impl State {
+    const fn new(pairs: Vec<(u8, u8)>) -> Self {
+        Self { elevator: 0, pairs }
+    }
+
+    fn iter(&self) -> impl Iterator<Item = u8> {
+        self.pairs.iter().flat_map(|(a, b)| [*a, *b])
+    }
+
+    fn get_by_index_mut(&mut self, i: usize) -> &mut u8 {
+        let pair = self.pairs.get_mut(i / 2).unwrap();
+        tern!(i.is_multiple_of(2), &mut pair.0, &mut pair.1)
+    }
+}
+
 fn neighbors(state: &State) -> Vec<(State, u32)> {
-    let mut next = vec![];
-    for i in 0..state.cur_floor().len() {
-        if state.elevator != 1 {
-            let new_elevator = state.elevator - 1;
-            let mut new_state = state.clone();
-            let removed = new_state.cur_floor_mut().remove(i);
-            let next_floor = new_state.floor_mut(new_elevator);
-            next_floor.push(removed);
-            if new_state.is_valid() {
-                let mut cloned = new_state.clone();
-                cloned.elevator = new_elevator;
-                cloned.cur_floor_mut().sort();
-                next.push((cloned, 1));
-            }
-            for i2 in 0..new_state.cur_floor().len() {
-                let mut new_state_2 = new_state.clone();
-                let removed2 = new_state_2.cur_floor_mut().remove(i2);
-                let next_floor2 = new_state_2.floor_mut(new_elevator);
-                next_floor2.push(removed2);
-                if new_state_2.is_valid() {
-                    let mut cloned = new_state_2.clone();
-                    cloned.elevator = new_elevator;
-                    cloned.cur_floor_mut().sort();
-                    next.push((cloned, 1));
-                }
-            }
+    let mut output = vec![];
+
+    let mut add_neighbor = |state: State| {
+        if is_valid(&state) {
+            output.push((state.inline(|v| v.pairs.sort_unstable()), 1));
         }
-        if state.elevator != 4 {
-            let new_elevator = state.elevator + 1;
-            let mut new_state = state.clone();
-            let removed = new_state.cur_floor_mut().remove(i);
-            let next_floor = new_state.floor_mut(new_elevator);
-            next_floor.push(removed);
-            if new_state.is_valid() {
-                let mut cloned = new_state.clone();
-                cloned.elevator = new_elevator;
-                cloned.cur_floor_mut().sort();
-                next.push((cloned, 1));
-            }
-            for i2 in 0..new_state.cur_floor().len() {
-                let mut new_state_2 = new_state.clone();
-                let removed2 = new_state_2.cur_floor_mut().remove(i2);
-                let next_floor2 = new_state_2.floor_mut(new_elevator);
-                next_floor2.push(removed2);
-                if new_state_2.is_valid() {
-                    let mut cloned = new_state_2.clone();
-                    cloned.elevator = new_elevator;
-                    cloned.cur_floor_mut().sort();
-                    next.push((cloned, 1));
-                }
-            }
+    };
+
+    let indices = state
+        .iter()
+        .enumerate()
+        .filter_map(|(i, x)| (x == state.elevator).then_some(i))
+        .collect_vec();
+
+    for (i1, i2) in indices.iter().copied().tuple_combinations() {
+        if state.elevator != 3 {
+            let mut cloned = state.clone();
+
+            *cloned.get_by_index_mut(i1) += 1;
+            *cloned.get_by_index_mut(i2) += 1;
+            cloned.elevator += 1;
+
+            add_neighbor(cloned);
+        }
+        if state.elevator != 0 {
+            let mut cloned = state.clone();
+
+            *cloned.get_by_index_mut(i1) -= 1;
+            *cloned.get_by_index_mut(i2) -= 1;
+            cloned.elevator -= 1;
+
+            add_neighbor(cloned);
         }
     }
 
-    next
+    for obj1 in indices {
+        if state.elevator != 3 {
+            let mut cloned = state.clone();
+
+            *cloned.get_by_index_mut(obj1) += 1;
+            cloned.elevator += 1;
+
+            add_neighbor(cloned);
+        }
+        if state.elevator != 0 {
+            let mut cloned = state.clone();
+
+            *cloned.get_by_index_mut(obj1) -= 1;
+            cloned.elevator -= 1;
+
+            add_neighbor(cloned);
+        }
+    }
+
+    output
 }
 
-fn part1(input: &'static str) -> u32 {
-    let (f1, f2, f3, f4) = input.lines().map(parse_floor).collect_tuple().unwrap();
-    let total_items = f1.len() + f2.len() + f3.len() + f4.len();
-    let start = State {
-        f1,
-        f2,
-        f3,
-        f4,
-        elevator: 1,
-    };
+fn is_valid(state: &State) -> bool {
+    let mut f_ok = [true; 4];
+    for s in &state.pairs {
+        f_ok[s.0 as usize] = false;
+    }
 
-    a_star_score(
-        vec![start],
-        |state| state.f4.len() == total_items,
-        neighbors,
-        |state| (total_items - state.f4.len()) as u32 / 2,
-    )
-    .unwrap()
+    state
+        .pairs
+        .iter()
+        .filter(|(a, b)| a != b)
+        .all(|s| f_ok[s.1 as usize])
+}
+
+fn starting_pairs(input: &str) -> Vec<(u8, u8)> {
+    let mut map: HashMap<i32, (Option<u8>, Option<u8>)> = HashMap::new();
+
+    let mut name_map = HashMap::new();
+    let mut next_id = 0;
+
+    for (floor, objects) in input.lines().map(parse_floor).enumerate() {
+        for (name, obj) in objects {
+            let id = *name_map
+                .entry(name)
+                .or_insert(defer!(next_id; next_id += 1));
+
+            let pair = map.entry(id).or_default();
+            *tern!(obj, &mut pair.0, &mut pair.1) = Some(floor as u8);
+        }
+    }
+
+    map.into_values()
+        .map(|(a, b)| (a.unwrap(), b.unwrap()))
+        .collect_vec()
+        .inline(|v| v.sort_unstable())
+}
+
+fn all_on_top(state: &State) -> bool {
+    state.pairs.iter().all(|(a, b)| *a == 3 && *b == 3)
+}
+
+fn heuristic(state: &State) -> u32 {
+    state
+        .pairs
+        .iter()
+        .map(|(a, b)| u32::from(6 - (a + b)))
+        .sum::<u32>()
+        / 2
+}
+
+fn part1(input: &str) -> u32 {
+    let pairs = starting_pairs(input);
+
+    let s = State::new(pairs);
+
+    a_star_score(vec![s], all_on_top, neighbors, heuristic).unwrap()
 }
 
 fn part2(input: &'static str) -> u32 {
-    let (mut f1, f2, f3, f4) = input.lines().map(parse_floor).collect_tuple().unwrap();
-    f1.append(&mut vec![
-        Object::Generator("elerium"),
-        Object::Microchip("elerium"),
-        Object::Generator("dilithium"),
-        Object::Microchip("dilithium"),
-    ]);
-    let total_items = f1.len() + f2.len() + f3.len() + f4.len();
-    let start = State {
-        f1,
-        f2,
-        f3,
-        f4,
-        elevator: 1,
-    };
+    let mut pairs = starting_pairs(input);
 
-    a_star_score(
-        vec![start],
-        |state| state.f4.len() == total_items,
-        neighbors,
-        |state| (total_items - state.f4.len()) as u32 / 2,
-    )
-    .unwrap()
+    pairs.extend([(0, 0); 2]);
+
+    let s = State::new(pairs);
+
+    a_star_score(vec![s], all_on_top, neighbors, heuristic).unwrap()
 }
 
 #[cfg(test)]
