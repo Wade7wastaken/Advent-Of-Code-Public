@@ -102,7 +102,7 @@ impl<I: Iterator> IteratorExt for I {
 
     /// Detects a cycle in the iterator, returning the index of the start of the
     /// cycle, the length of the cycle, and the items collected. The items
-    /// include all yielded values up to and including the first one seen twice.
+    /// include all yielded values up to but not including the first one seen.
     fn detect_cycle(self) -> Option<(usize, usize, Vec<Self::Item>)>
     where
         Self::Item: Clone + Eq + Hash,
@@ -110,10 +110,10 @@ impl<I: Iterator> IteratorExt for I {
         let mut vec = Vec::new();
         let mut map = HashMap::new();
         for (i, item) in self.enumerate() {
-            vec.push(item.clone());
-            if let Some(prev) = map.insert(item, i) {
+            if let Some(prev) = map.insert(item.clone(), i) {
                 return Some((prev, i - prev, vec));
             }
+            vec.push(item);
         }
 
         None
@@ -204,7 +204,7 @@ mod tests {
     fn detect_cycle() {
         assert_eq!(
             (0..).map(|i| i % 12).detect_cycle().unwrap(),
-            (0, 12, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0])
+            (0, 12, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
         );
     }
 

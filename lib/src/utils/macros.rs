@@ -39,16 +39,16 @@ macro_rules! defer {
 
 #[macro_export]
 macro_rules! borrow_loop {
-    ($iter:expr, $var:ident, $body:expr) => {{
+    ($iter:ident, $var:pat, $body:expr) => {{
         while let Some($var) = $iter.next() {
-            $body
+            $body;
         }
     }};
 }
 
 #[macro_export]
 macro_rules! pop_loop {
-    ($v:expr, $var:ident, $body:expr) => {{
+    ($v:ident, $var:pat, $body:expr) => {{
         while let Some($var) = $v.pop() {
             $body
         }
@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn select() {
         let mut iter = [1, 2, 3, 4, 5].into_iter();
-        assert_eq!(select!(iter; 1,3,4), (2, 4, 5));
+        assert_eq!(select!(iter; 1, 3, 4), (2, 4, 5));
     }
 
     #[test]
@@ -75,5 +75,40 @@ mod tests {
         let calculated = { defer!("some value"; a += 1) };
         assert_eq!(calculated, "some value");
         assert_eq!(a, 5);
+    }
+
+    #[test]
+    fn borrow_loop() {
+        let vec = [1i32, 2, 3, 4];
+        let mut output: Vec<i32> = vec![];
+
+        // loop over vec while being able to reference it
+        let mut iter = vec.iter().enumerate();
+        borrow_loop!(iter, (i, x), {
+            output.push(x + vec[0..i].iter().copied().sum::<i32>());
+        });
+
+        // vec hasn't been dropped.
+        assert_eq!(vec, [1, 2, 3, 4]);
+
+        assert_eq!(output, vec![1, 3, 6, 10]);
+    }
+
+    #[test]
+    fn pop_loop() {
+        let mut vec = vec![2, 1, 2];
+
+        let mut output = vec![];
+
+        pop_loop!(vec, x, {
+            if x % 2 == 0 {
+                vec.push(x / 2);
+            } else {
+                output.push(x);
+            }
+        });
+
+        assert_eq!(output, vec![1, 1, 1]);
+        assert_eq!(vec, Vec::<i32>::new());
     }
 }

@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use lib::{CountWhere, StringTools};
+use lib::{IteratorExt, StringTools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();

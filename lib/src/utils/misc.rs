@@ -14,11 +14,8 @@ pub fn equal_combine<T: PartialEq>(a: T, b: T) -> Option<T> {
 
 /// Runs a function on some data cyclically i times.
 #[inline]
-pub fn cycle<T>(mut state: T, i: usize, mut f: impl FnMut(T) -> T) -> T {
-    for _ in 0..i {
-        state = f(state);
-    }
-    state
+pub fn cycle<T>(state: T, i: usize, mut f: impl FnMut(T) -> T) -> T {
+    (0..i).fold(state, |state, _| f(state))
 }
 
 pub trait Inline<R> {
@@ -29,6 +26,7 @@ pub trait Inline<R> {
 impl<T, R> Inline<R> for T {
     /// Runs a closure that takes a mutable reference to self, then returns an
     /// owned mutated self.
+    #[inline]
     fn inline(mut self, f: impl FnOnce(&mut Self) -> R) -> Self {
         f(&mut self);
         self

@@ -1,4 +1,4 @@
-use lib::{SliceTools, equal_combine, itertools::Itertools};
+use lib::{equal_combine, itertools::Itertools};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -18,9 +18,11 @@ fn part1(input: &str) -> u32 {
 fn part2(input: &str) -> u32 {
     let vec = input.bytes().map(|x| x - b'0').collect_vec();
 
+    let len = vec.len();
+
     vec.iter()
         .enumerate()
-        .filter(|(i, x)| *x == vec.at(i + vec.len() / 2))
+        .filter(|(i, x)| *x == vec.get((i + len / 2) % len).unwrap())
         .map(|(_, x)| u32::from(*x))
         .sum()
 }

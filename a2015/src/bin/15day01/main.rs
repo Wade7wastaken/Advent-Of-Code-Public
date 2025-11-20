@@ -6,7 +6,7 @@ fn main() {
     println!("{}", part2(input));
 }
 
-fn paren(c: u8) -> i32 {
+const fn paren(c: u8) -> i32 {
     match c {
         b'(' => 1,
         b')' => -1,

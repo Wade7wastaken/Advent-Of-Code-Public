@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use lib::{SliceTools, itertools::Itertools};
+use lib::itertools::Itertools;
 
 fn main() {
     let input = include_str!("./input.txt").trim();
@@ -18,7 +18,7 @@ fn redistribute(state: &mut [u32]) {
     let mut blocks = blocks;
     let mut i = i + 1;
     while blocks > 0 {
-        *state.at_mut(i) += 1;
+        *state.get_mut(i % state.len()).unwrap() += 1;
         i += 1;
         blocks -= 1;
     }
