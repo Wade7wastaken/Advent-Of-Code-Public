@@ -1,9 +1,9 @@
-use lib::{Grid, Point2, itertools::Itertools};
+use lib::{Dir, Grid, IteratorExt, a_star_score, itertools::Itertools, point2};
 
 fn main() {
     let input = include_str!("./input.txt").trim();
     println!("{}", part1(input));
-    // println!("{}", part2(input));
+    println!("{}", part2(input));
 }
 
 #[derive(Debug, Clone)]
@@ -32,23 +32,40 @@ fn part1(input: &str) -> u32 {
         .map(parse_line)
         .permutations(2)
         .map(|p| p.into_iter().collect_tuple().unwrap())
-        .filter(|(a, b)| a.used != 0 && !(a.x == b.x && a.y == b.y) && a.used <= b.avail)
-        .count() as u32
-}
-
-struct Cell {
-    used: u32,
-    avail: u32,
-}
-
-struct State {
-    grid: Grid<Cell>,
-    goal: Point2<usize>,
+        .count_where(|(a, b)| a.used != 0 && !(a.x == b.x && a.y == b.y) && a.used <= b.avail)
+        as u32
 }
 
 fn part2(input: &str) -> u32 {
-    // input.lines().map(parse_line).map(|n| Cell {used: n.used, avail: n.avail})
-    todo!();
+    let nodes = input.lines().skip(2).map(parse_line).collect_vec();
+
+    let max_x = nodes.iter().map(|n| n.x).max().unwrap() as usize;
+    let max_y = nodes.iter().map(|n| n.y).max().unwrap() as usize;
+
+    let mut grid = Grid::new_filled((0, 0), max_x + 1, max_y + 1);
+
+    for node in nodes {
+        grid.set((node.x as usize, node.y as usize), (node.used, node.avail));
+    }
+
+    let empty = grid.enumerate().find(|n| n.1.0 == 0).unwrap().0;
+    let goal = point2(max_x, 0);
+
+    a_star_score(
+        vec![empty],
+        |p| *p == goal,
+        |p| {
+            Dir::ORTHO
+                .into_iter()
+                .filter_map(|d| p.apply(d))
+                .filter(|p| grid.get(*p).is_some_and(|c| c.0 < 100))
+                .map(|p| (p, 1))
+                .collect_vec()
+        },
+        |p| p.manhattan_dist(goal) as u32,
+    )
+    .unwrap()
+        + ((max_x as u32 - 1) * 5)
 }
 
 #[cfg(test)]
@@ -58,7 +75,7 @@ mod tests {
     #[test]
     fn test_day() {
         let input = include_str!("./input.txt").trim();
-        // assert_eq!(part1(input), todo!());
-        // assert_eq!(part2(input), todo!());
+        assert_eq!(part1(input), 892);
+        assert_eq!(part2(input), 227);
     }
 }
