@@ -7,9 +7,6 @@ use num::{CheckedAdd, CheckedSub, Num};
 
 use crate::{Dir, Grid, Offset, Point2, Vec2};
 
-// TODO:
-// make bounds not matter for Eq
-
 /// [lower, upper), None is assumed to be unbounded
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Bounds<T: Num + Copy>(Point2<T>, Point2<T>);
@@ -21,7 +18,7 @@ impl<T: Num + Copy + Display> Display for Bounds<T> {
 }
 
 /// Represents an object with both a position and a direction. Has optional
-/// bounds that restrict its positional movement
+/// bounds that restrict its positional movement.
 #[derive(Debug, Clone, Copy)]
 pub struct Entity<T: Num + Copy, D: Offset = Dir> {
     pos: Point2<T>,
@@ -30,28 +27,30 @@ pub struct Entity<T: Num + Copy, D: Offset = Dir> {
 }
 
 impl<T: Num + Copy, D: Offset> Entity<T, D> {
-    /// getter for pos
+    /// Gets the entity's position.
     pub const fn pos(self) -> Point2<T> {
         self.pos
     }
 
-    /// getter for dir
+    /// Gets the entity's direction.
     pub const fn dir(self) -> D {
         self.dir
     }
 
-    /// returns pos and dir in a tuple
+    /// Gets the entity's position and direction.
     pub const fn tuple(self) -> (Point2<T>, D) {
         (self.pos, self.dir)
     }
 
-    /// getter for bounds
+    /// Gets the entity's bounds if they exist.
     pub const fn bounds(self) -> Option<Bounds<T>> {
         self.bounds
     }
 
-    /// Ability to change the bounds after the entity was created. Unsafe
-    /// because invalid bounds might cause an indexing panic when used with grid
+    /// Provides the ability to change the bounds after the entity was created.
+    /// Unsafe because invalid bounds might cause an indexing panic when used
+    /// with grid.
+    ///
     /// # Safety
     /// Caller is responsible for making sure the new bounds are safe in the
     /// given situation
@@ -59,7 +58,12 @@ impl<T: Num + Copy, D: Offset> Entity<T, D> {
         self.bounds = new_bounds;
     }
 
-    /// Checks if the current point is within the entity's bounds
+    /// Returns whether the entity has bounds.
+    pub const fn has_bounds(self) -> bool {
+        self.bounds.is_some()
+    }
+
+    /// Checks if the entity's current position is within the entity's bounds.
     fn is_bounded(&self) -> bool
     where
         T: PartialOrd,
@@ -68,7 +72,7 @@ impl<T: Num + Copy, D: Offset> Entity<T, D> {
             .is_some_and(|bounds| self.pos.within(bounds.0, bounds.1))
     }
 
-    /// Creates a new entity with a position and direction
+    /// Creates a new entity with a position and direction.
     pub fn new(pos: impl Into<Point2<T>>, dir: D) -> Self {
         Self {
             pos: pos.into(),
@@ -78,7 +82,7 @@ impl<T: Num + Copy, D: Offset> Entity<T, D> {
     }
 
     /// Creates a new entity with bounds. If the position is out of bounds, it
-    /// returns None
+    /// returns None.
     pub fn new_bounded(
         pos: impl Into<Point2<T>>,
         dir: D,
@@ -88,16 +92,19 @@ impl<T: Num + Copy, D: Offset> Entity<T, D> {
     where
         T: PartialOrd,
     {
-        Some(Self {
-            pos: pos.into(),
+        let lower = lower.into();
+        let upper = upper.into();
+        let pos = pos.into();
+
+        pos.within(lower, upper).then_some(Self {
+            pos,
             dir,
-            bounds: Some(Bounds(lower.into(), upper.into())),
+            bounds: Some(Bounds(lower, upper)),
         })
-        .filter(Self::is_bounded)
     }
 
     /// Creates a new entity with bounds from a grid. Returns None if the given
-    /// point is not bounded by the grid
+    /// point is not bounded by the grid.
     pub fn new_on_grid<C: Clone>(pos: impl Into<Point2<T>>, dir: D, grid: &Grid<C>) -> Option<Self>
     where
         T: From<usize> + PartialOrd,
@@ -126,7 +133,7 @@ impl<T: Num + Copy, D: Offset> Entity<T, D> {
     pub fn set(self, pos: impl Into<Point2<T>>, dir: D) -> Self {
         assert!(
             self.bounds.is_none(),
-            "Called set with an entity that has bounds. Use set_bounded instead"
+            "Called set with an entity that has bounds. Use set_bounded instead."
         );
         self.set_internal(pos, dir)
     }
@@ -155,7 +162,7 @@ impl<T: Num + Copy, D: Offset> Entity<T, D> {
     pub fn set_pos(self, pos: impl Into<Point2<T>>) -> Self {
         assert!(
             self.bounds.is_none(),
-            "Called set_pos with an entity that has bounds. Use set_pos_bounded instead"
+            "Called set_pos with an entity that has bounds. Use set_pos_bounded instead."
         );
         self.set_pos_internal(pos)
     }
@@ -210,8 +217,9 @@ impl<T: Num + Copy, D: Offset> Entity<T, D> {
     {
         assert!(
             self.bounds.is_none(),
-            "Called step with an entity that has bounds. Use set_pos_bounded instead"
+            "Called step with an entity that has bounds. Use set_pos_bounded instead."
         );
+        
         self.step_internal()
     }
 
@@ -240,7 +248,7 @@ impl<T: Num + Copy, D: Offset> Entity<T, D> {
     {
         assert!(
             self.bounds.is_none(),
-            "Called step with an entity that has bounds. Use set_pos_bounded instead"
+            "Called step with an entity that has bounds. Use set_pos_bounded instead."
         );
         self.step_n_internal(n)
     }
@@ -270,7 +278,7 @@ impl<T: Num + Copy, D: Offset> Entity<T, D> {
     {
         assert!(
             self.bounds.is_none(),
-            "Called slide with an entity that has bounds. Use slide_bounded instead"
+            "Called slide with an entity that has bounds. Use slide_bounded instead."
         );
         self.slide_internal(dir)
     }
@@ -306,10 +314,10 @@ impl<T: Num + Copy + Display, D: Offset> Display for Entity<T, D> {
         match self.bounds {
             Some(bounds) => write!(
                 f,
-                "At {}, heading {}, with bounds {}",
+                "At {} heading {} with bounds {}",
                 self.pos, self.dir, bounds
             ),
-            None => write!(f, "At {}, heading {}", self.pos, self.dir),
+            None => write!(f, "At {} heading {}", self.pos, self.dir),
         }
     }
 }
@@ -328,7 +336,7 @@ mod tests {
     fn display() {
         assert_eq!(
             Entity::new((1, 2), Dir::East).to_string(),
-            "At (1, 2), heading East"
+            "At (1, 2) heading East"
         );
     }
 

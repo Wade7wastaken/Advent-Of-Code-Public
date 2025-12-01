@@ -33,7 +33,7 @@ pub fn a_star_score<
     }
 
     while let Some(Node { data: node, .. }) = open_set.pop() {
-        if (end_cond)(&node) {
+        if end_cond(&node) {
             return Some(g_score.get(&node).unwrap().clone());
         }
 

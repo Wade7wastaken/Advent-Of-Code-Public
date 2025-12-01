@@ -42,7 +42,18 @@ fn enhance(g: Grid<bool>, maps: &HashMap<Grid<bool>, Grid<bool>>) -> Grid<bool> 
     }
 }
 
-fn parse_maps(input: &str) -> HashMap<Grid<bool>, Grid<bool>> {
+fn grid_to_id(grid: Grid<bool>) -> u16 {
+    let mut ans = 0;
+    for c in grid.into_iter() {
+        if c {
+            ans += 1;
+        }
+        ans *= 2;
+    }
+    ans
+}
+
+fn parse_maps(input: &str) -> HashMap<u16, u16> {
     input
         .lines()
         .flat_map(|l| {
@@ -51,32 +62,55 @@ fn parse_maps(input: &str) -> HashMap<Grid<bool>, Grid<bool>> {
                 .map(|g| parse_grid(g.trim()))
                 .collect_tuple()
                 .unwrap();
-            // println!("{before}");
-            // println!();
-            // println!("{after}");
             (0..4)
                 .map(move |_| {
                     before.retranspose_cols();
                     before.rotate();
-                    (before.clone())
+                    before.clone()
                 })
                 .flat_map(|rotated| [rotated.clone(), { rotated.inline(Grid::flip_vertical) }])
-                .map(|before| (before, after.clone()))
+                .map(|before| (grid_to_id(before), grid_to_id(after.clone())))
                 .collect_vec()
         })
-        .collect::<HashMap<_, _>>()
+        .collect()
+}
+
+fn split_4(n: u16) -> [u16; 4] {
+    
 }
 
 fn part1(input: &str) -> u32 {
     let maps = parse_maps(input);
 
-    let g = Grid::from_chars(
-        ".#.
+    let g = grid_to_id(
+        Grid::from_chars(
+            ".#.
 ..#
 ###",
-    )
-    .unwrap()
-    .map(|c| c == '#');
+        )
+        .unwrap()
+        .map(|c| c == '#'),
+    );
+
+    let mut sections = HashMap::new();
+    sections.insert(g, 1usize);
+
+    let mut three = true;
+
+    for i in 0..5 {
+        if three {
+            sections.into_iter().map(|(k, v)| {
+                let new_key = *maps.get(&k).unwrap();
+            })
+        } else {
+            sections = sections
+                .into_iter()
+                .map(|(k, v)| (*maps.get(&k).unwrap(), v))
+                .collect();
+        }
+
+        three = !three;
+    }
 
     cycle(g, 5, |g| enhance(g, &maps)).count(&true) as u32
 }

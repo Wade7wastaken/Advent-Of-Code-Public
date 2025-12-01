@@ -1,5 +1,5 @@
 [workspace]
-members = ["a2015", "a2016", "a2017", "a2018", "a2020", "a2022", "a2023", "a2024", "lib"]
+members = ["a2015", "a2016", "a2017", "a2018", "a2020", "a2022", "a2023", "a2024", "a2025", "lib"]
 resolver = "2"
 
 [profile.release]
