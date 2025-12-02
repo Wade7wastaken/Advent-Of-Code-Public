@@ -1,6 +1,6 @@
 fn main() {
     let input = include_str!("./input.txt").trim();
-    // println!("{}", part1(input));
+    println!("{}", part1(input));
     println!("{}", part2(input));
 }
 
