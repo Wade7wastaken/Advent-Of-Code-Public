@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn test_day() {
         let input = include_str!("./input.txt").trim();
-        // assert_eq!(part1(input), todo!());
-        // assert_eq!(part2(input), todo!());
+        assert_eq!(part1(input), 1158);
+        assert_eq!(part2(input), 6860);
     }
 }
