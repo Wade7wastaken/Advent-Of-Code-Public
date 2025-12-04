@@ -45,7 +45,7 @@ fn part1(input: &str) -> u32 {
         |en| {
             grid.with_offsets(en.pos(), Dir::ORTHO)
                 .all()
-                .filter(|(_, dir, c)| **c != '#' && !dir.is_reverse(en.dir()))
+                .filter(|(_, dir, c)| **c != '#' && !dir.is_reverse_of(en.dir()))
                 .map(|(p, dir, _)| {
                     (
                         en.set_bounded(p, dir).unwrap(),
@@ -79,7 +79,7 @@ fn part2(input: &str) -> u32 {
         |en| {
             grid.with_offsets(en.pos(), Dir::ORTHO)
                 .all()
-                .filter(|(_, dir, c)| **c != '#' && !dir.is_reverse(en.dir()))
+                .filter(|(_, dir, c)| **c != '#' && !dir.is_reverse_of(en.dir()))
                 .map(|(p, dir, _)| {
                     (
                         en.set_bounded(p, dir).unwrap(),

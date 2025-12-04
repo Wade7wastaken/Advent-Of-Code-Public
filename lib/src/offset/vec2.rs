@@ -1,25 +1,55 @@
-use std::fmt::{self, Display};
+use std::fmt::{self, Debug, Display};
 
-use derive_more::derive::{Add, AddAssign, Mul, MulAssign};
+use derive_more::derive::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use num::Num;
 
 use crate::{Dir, Offset, Point2};
 
-#[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, Add, AddAssign, Mul, MulAssign)]
+/// An arbitrary 2d vector that has an x and y component. The positive x axis
+/// faces east and the positive y axis faces south.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    Default,
+    Hash,
+    PartialEq,
+    Eq,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    AddAssign,
+    SubAssign,
+    MulAssign,
+    DivAssign,
+)]
 pub struct Vec2 {
     pub x: isize,
     pub y: isize,
 }
 
 impl Vec2 {
+    /// The unit vector facing East, or positive x.
     pub const EAST: Vec2 = Vec2::new(1, 0);
+
+    /// The unit vector facing west, or negative x.
     pub const WEST: Vec2 = Vec2::new(-1, 0);
+
+    /// The unit vector facing north, or negative y.
     pub const NORTH: Vec2 = Vec2::new(0, -1);
+
+    /// The unit vector facing south, or positive y.
     pub const SOUTH: Vec2 = Vec2::new(0, 1);
 
-    // groups of directions
+    /// Each of the cardinal directions in the order they are defined.
     pub const ORTHO: [Vec2; 4] = [Vec2::EAST, Vec2::WEST, Vec2::NORTH, Vec2::SOUTH];
+
+    /// Each of the cardinal directions in the order they are encountered in a
+    /// linear search.
     pub const ORTHO_SNAKE: [Vec2; 4] = [Vec2::NORTH, Vec2::WEST, Vec2::EAST, Vec2::SOUTH];
+
+    /// All adjacent unit directions, including corners.
     pub const SURROUNDING: [Vec2; 8] = [
         Vec2::new(-1, -1),
         Vec2::new(0, -1),
@@ -30,6 +60,8 @@ impl Vec2 {
         Vec2::new(0, 1),
         Vec2::new(1, 1),
     ];
+
+    /// All adjacent corners.
     pub const CORNERS: [Vec2; 4] = [
         Vec2::new(-1, -1),
         Vec2::new(1, -1),
@@ -37,29 +69,23 @@ impl Vec2 {
         Vec2::new(1, 1),
     ];
 
-    /// Creates a vec2 with x and y components. Const for direction groups
+    /// Creates a Vec2 with the given x and y components.
     #[must_use]
+    #[inline]
     pub const fn new(x: isize, y: isize) -> Self {
         Self { x, y }
     }
 
+    /// Calculates the dot product between two Vec2s.
     #[must_use]
-    pub const fn try_into_dir(self) -> Option<Dir> {
-        match self {
-            Vec2::EAST => Some(Dir::East),
-            Vec2::WEST => Some(Dir::West),
-            Vec2::NORTH => Some(Dir::North),
-            Vec2::SOUTH => Some(Dir::South),
-            _ => None,
-        }
-    }
-
-    /// Calculates the dot product between two dirs
-    #[must_use]
+    #[inline]
     pub const fn dot(self, other: Self) -> isize {
         self.x * other.x + self.y * other.y
     }
 
+    /// Calculates b - a, or the vector staring at a and pointing to b, as a
+    /// Vec2.
+    #[must_use]
     pub fn between<T: Num + Copy + TryInto<isize>>(a: Point2<T>, b: Point2<T>) -> Option<Self> {
         let x = b.x.try_into().ok()? - a.x.try_into().ok()?;
         let y = b.y.try_into().ok()? - a.y.try_into().ok()?;
@@ -68,7 +94,7 @@ impl Vec2 {
 }
 
 impl Offset for Vec2 {
-    /// Reverses a vec2
+    #[inline]
     fn reverse(self) -> Self {
         Self {
             x: -self.x,
@@ -76,7 +102,7 @@ impl Offset for Vec2 {
         }
     }
 
-    /// Turns the vec2 left (ccw) by 90 degrees
+    #[inline]
     fn turn_left(self) -> Self {
         Self {
             x: self.y,
@@ -84,7 +110,7 @@ impl Offset for Vec2 {
         }
     }
 
-    /// Turns the vec2 right (cw) by 90 degrees
+    #[inline]
     fn turn_right(self) -> Self {
         Self {
             x: -self.y,
@@ -92,14 +118,9 @@ impl Offset for Vec2 {
         }
     }
 
-    /// Determines if two dirs are perpendicular/orthogonal
+    #[inline]
     fn is_ortho(self, other: Self) -> bool {
         self.dot(other) == 0
-    }
-
-    /// Determines if other is the reverse of self
-    fn is_reverse(self, other: Self) -> bool {
-        self == other.reverse()
     }
 }
 
@@ -120,6 +141,17 @@ impl From<Dir> for Vec2 {
     }
 }
 
+impl<T: Num + Copy + TryInto<isize>> TryFrom<Point2<T>> for Vec2 {
+    type Error = <T as TryInto<isize>>::Error;
+
+    fn try_from(value: Point2<T>) -> Result<Self, Self::Error> {
+        let x: isize = value.x.try_into()?;
+        let y: isize = value.y.try_into()?;
+
+        Ok(Self { x, y })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -133,7 +165,7 @@ mod tests {
     #[test]
     fn reverse() {
         assert_eq!(Vec2::new(4, -5).reverse(), Vec2::new(-4, 5));
-        assert!(Vec2::new(4, -5).is_reverse(Vec2::new(-4, 5)));
+        assert!(Vec2::new(4, -5).is_reverse_of(Vec2::new(-4, 5)));
     }
 
     #[test]

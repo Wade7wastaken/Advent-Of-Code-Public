@@ -82,7 +82,7 @@ fn internal_vertices(
                 .filter(|dir| grid.get_offset(q, *dir).is_some_and(|adj| *adj == plant_id))
                 .tuple_combinations()
                 .count_where(|(a, b)| {
-                    !a.is_reverse(b)
+                    !a.is_reverse_of(b)
                         && grid.get_offset(q, Vec2::from(a) + Vec2::from(b)) == Some(&plant_id)
                 })
         })

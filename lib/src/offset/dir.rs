@@ -4,6 +4,7 @@ use derive_more::derive::Display;
 
 use crate::{Offset, Vec2};
 
+/// An enum containing all orthogonal directions in a 2d plane.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Display)]
 pub enum Dir {
     #[display("East")]
@@ -17,14 +18,18 @@ pub enum Dir {
 }
 
 impl Dir {
-    // groups of directions
+    /// Each of the cardinal directions in the order they are defined.
     pub const ORTHO: [Dir; 4] = [Dir::East, Dir::West, Dir::North, Dir::South];
+
+    /// Each of the cardinal directions in the order they are encountered in a
+    /// linear search.
     pub const ORTHO_SNAKE: [Dir; 4] = [Dir::North, Dir::West, Dir::East, Dir::South];
 
     /// Returns an arbitrary index for each of the dirs, so that dirs can be
     /// used as the keys for an array. Don't depend on the specific value of the
     /// index.
     #[must_use]
+    #[inline]
     pub const fn idx(self) -> usize {
         match self {
             Dir::East => 0,
@@ -36,7 +41,7 @@ impl Dir {
 }
 
 impl Offset for Dir {
-    /// Reverses a Dir.
+    #[inline]
     fn reverse(self) -> Self {
         match self {
             Self::East => Self::West,
@@ -46,7 +51,7 @@ impl Offset for Dir {
         }
     }
 
-    /// Turns the Dir left (ccw) by 90 degrees.
+    #[inline]
     fn turn_left(self) -> Self {
         match self {
             Self::East => Self::North,
@@ -56,7 +61,7 @@ impl Offset for Dir {
         }
     }
 
-    /// Turns the Dir right (cw) by 90 degrees.
+    #[inline]
     fn turn_right(self) -> Self {
         match self {
             Self::East => Self::South,
@@ -66,14 +71,9 @@ impl Offset for Dir {
         }
     }
 
-    /// Determines if two Dirs are perpendicular/orthogonal.
+    #[inline]
     fn is_ortho(self, other: Self) -> bool {
-        !self.is_reverse(other) && self != other
-    }
-
-    /// Determines if other is the reverse of self.
-    fn is_reverse(self, other: Self) -> bool {
-        self == other.reverse()
+        !self.is_reverse_of(other) && self != other
     }
 }
 
@@ -86,10 +86,10 @@ impl TryFrom<Vec2> for Dir {
     type Error = DirConvertError;
     fn try_from(value: Vec2) -> Result<Self, Self::Error> {
         match value {
-            Vec2 { x: 1, y: 0 } => Ok(Dir::East),
-            Vec2 { x: -1, y: 0 } => Ok(Dir::West),
-            Vec2 { x: 0, y: -1 } => Ok(Dir::North),
-            Vec2 { x: 0, y: 1 } => Ok(Dir::South),
+            Vec2::EAST => Ok(Dir::East),
+            Vec2::WEST => Ok(Dir::West),
+            Vec2::NORTH => Ok(Dir::North),
+            Vec2::SOUTH => Ok(Dir::South),
             _ => Err(DirConvertError(value)),
         }
     }
@@ -104,9 +104,9 @@ impl TryFrom<u8> for Dir {
     type Error = DirParseError;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value.to_ascii_lowercase() {
-            b'^' | b'n' | b'u' => Ok(Dir::North),
-            b'<' | b'w' | b'l' => Ok(Dir::West),
             b'>' | b'e' | b'r' => Ok(Dir::East),
+            b'<' | b'w' | b'l' => Ok(Dir::West),
+            b'^' | b'n' | b'u' => Ok(Dir::North),
             b'v' | b's' | b'd' => Ok(Dir::South),
             _ => Err(DirParseError(char::from(value).to_string())),
         }
@@ -117,9 +117,9 @@ impl TryFrom<char> for Dir {
     type Error = DirParseError;
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value.to_ascii_lowercase() {
-            '^' | 'n' | 'u' => Ok(Dir::North),
-            '<' | 'w' | 'l' => Ok(Dir::West),
             '>' | 'e' | 'r' => Ok(Dir::East),
+            '<' | 'w' | 'l' => Ok(Dir::West),
+            '^' | 'n' | 'u' => Ok(Dir::North),
             'v' | 's' | 'd' => Ok(Dir::South),
             _ => Err(DirParseError(value.to_string())),
         }
@@ -130,9 +130,9 @@ impl FromStr for Dir {
     type Err = DirParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_ascii_lowercase().as_str() {
-            "^" | "n" | "u" | "north" | "up" => Ok(Dir::North),
-            "<" | "w" | "l" | "west" | "left" => Ok(Dir::West),
             ">" | "e" | "r" | "east" | "right" => Ok(Dir::East),
+            "<" | "w" | "l" | "west" | "left" => Ok(Dir::West),
+            "^" | "n" | "u" | "north" | "up" => Ok(Dir::North),
             "v" | "s" | "d" | "south" | "down" => Ok(Dir::South),
             _ => Err(DirParseError(s.to_string())),
         }
@@ -161,6 +161,12 @@ mod tests {
     fn reverse() {
         assert_eq!(Dir::East.reverse(), Dir::West);
         assert_eq!(Dir::North.reverse(), Dir::South);
+    }
+
+    #[test]
+    fn is_reverse_or() {
+        assert!(Dir::East.is_reverse_of(Dir::West));
+        assert!(Dir::North.is_reverse_of(Dir::South));
     }
 
     #[test]
