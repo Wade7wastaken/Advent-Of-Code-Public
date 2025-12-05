@@ -177,7 +177,7 @@ impl<T: Copy> From<InclusiveRange<T>> for Range<T> {
 
 impl<T: Copy + PartialOrd> PartialOrd for Range<T> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.start.partial_cmp(&other.end)
+        self.start.partial_cmp(&other.start)
     }
 }
 
@@ -331,7 +331,7 @@ impl<T: Copy> From<Range<T>> for InclusiveRange<T> {
 
 impl<T: Copy + PartialOrd> PartialOrd for InclusiveRange<T> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.start.partial_cmp(&other.end)
+        self.start.partial_cmp(&other.start)
     }
 }
 
