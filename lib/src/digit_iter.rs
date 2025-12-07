@@ -5,15 +5,15 @@ use std::{
 
 use crate::{Inline, tern};
 
+#[must_use]
+pub const fn integer_length(n: u32) -> usize {
+    tern!(n == 0, 1, n.ilog10() as usize + 1)
+}
+
 #[derive(Debug, Default, Clone, Eq)]
 pub struct DigitIter {
     n: u32,
     length: usize,
-}
-
-#[must_use]
-pub const fn integer_length(n: u32) -> usize {
-    tern!(n == 0, 1, n.ilog10() as usize + 1)
 }
 
 impl DigitIter {
